@@ -1,0 +1,13 @@
+export { semanticToXml } from './serializers/document.js';
+export { serializeStyles } from './serializers/styles.js';
+export { serializeComments } from './serializers/comments.js';
+export { serializeRevisionMark } from './serializers/revision.js';
+export { serializeHeader, serializeFooter } from './serializers/header-footer.js';
+export { serializeNumbering } from './serializers/numbering.js';
+export { serializeFootnotes } from './serializers/footnote.js';
+export { serializeEndnotes } from './serializers/endnote.js';
+export { serializeTheme } from './serializers/theme.js';
+export { serializeFontTable } from './serializers/font-table.js';
+export { serializeSettings } from './serializers/settings.js';
+export { serializeCommentExts } from './serializers/comments-extended.js';
+export { serializePeople } from './serializers/people.js';

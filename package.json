@@ -1,0 +1,46 @@
+{
+  "name": "office-meta-parser",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./core": {
+      "types": "./dist/core/index.d.ts",
+      "default": "./dist/core/index.js"
+    },
+    "./docx": {
+      "types": "./dist/docx/index.d.ts",
+      "default": "./dist/docx/index.js"
+    },
+    "./xlsx": {
+      "types": "./dist/xlsx/index.d.ts",
+      "default": "./dist/xlsx/index.js"
+    },
+    "./pptx": {
+      "types": "./dist/pptx/index.d.ts",
+      "default": "./dist/pptx/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:codec": "tsx tests/scripts/codec-test.ts",
+    "generate:fixtures": "tsx tests/scripts/generate-fixtures.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "tsup": "^8.0.0",
+    "vitest": "^2.0.0"
+  },
+  "dependencies": {
+    "jszip": "^3.10.0",
+    "fast-xml-parser": "^4.4.0"
+  }
+}
