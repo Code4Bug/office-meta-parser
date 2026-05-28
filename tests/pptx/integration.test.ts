@@ -1,6 +1,16 @@
 import { describe, it, expect } from 'vitest';
-import { parsePptx, serializePptx } from '../../src/pptx/index.js';
+import {
+  parsePptx, serializePptx,
+  createPptx, validatePptx, loadPptx, savePptx,
+  addComment, removeComment, listComments, listSlideComments, getCommentText,
+  updatePptxTitle, updatePptxCreator, updatePptxSubject, updatePptxDescription,
+  updatePptxKeywords, updatePptxCategory, updatePptxLastModifiedBy,
+  pptx, toPptxJSON, toPptxJSONString,
+} from '../../src/pptx/index.js';
+import { OMP } from '../../src/omp.js';
 import JSZip from 'jszip';
+import { join } from 'path';
+import { tmpdir } from 'os';
 
 async function createMinimalPptx(): Promise<ArrayBuffer> {
   const zip = new JSZip();
@@ -112,5 +122,147 @@ describe('PPTX integration', () => {
     const zip = await JSZip.loadAsync(output);
     expect(zip.file('ppt/presentation.xml')).not.toBeNull();
     expect(zip.file('ppt/slides/slide1.xml')).not.toBeNull();
+  });
+});
+
+describe('PPTX create', () => {
+  it('createPptx returns valid presentation', () => {
+    const pres = createPptx({ title: 'Test', creator: 'Alice' });
+    expect(pres.meta.title).toBe('Test');
+    expect(pres.meta.creator).toBe('Alice');
+    expect(pres.slides).toHaveLength(1);
+    expect(pres.masters.length).toBeGreaterThanOrEqual(1);
+    expect(pres.layouts.length).toBeGreaterThanOrEqual(1);
+    expect(pres.theme).toBeDefined();
+    expect(pres.slideSize).toBeDefined();
+  });
+
+  it('createPptx serializes and round-trips', async () => {
+    const pres = createPptx({ title: 'RT' });
+    pres.slides[0].elements.push({
+      type: 'text',
+      content: 'Title',
+      position: { x: 0, y: 0, width: 9144000, height: 1000000 },
+      paragraphs: [{ runs: [{ text: 'Title Text' }] }],
+    });
+    const buf = await serializePptx(pres);
+    expect(buf.byteLength).toBeGreaterThan(0);
+  });
+});
+
+describe('PPTX validate', () => {
+  it('validatePptx passes for valid presentation', () => {
+    const pres = createPptx({ title: 'Valid' });
+    const issues = validatePptx(pres);
+    expect(issues.filter(i => i.level === 'error')).toHaveLength(0);
+  });
+});
+
+describe('PPTX comments', () => {
+  it('addComment and listComments', () => {
+    const pres = createPptx({ title: 'Comments' });
+    const c = addComment(pres, 0, 'Reviewer', 'Fix this', 100, 200);
+    expect(c.id).toBeDefined();
+    expect(c.authorName).toBe('Reviewer');
+    expect(c.text).toBe('Fix this');
+    expect(c.position?.x).toBe(100);
+    expect(pres.slides[0].comments).toHaveLength(1);
+
+    const list = listComments(pres);
+    expect(list).toHaveLength(1);
+    expect(list[0].slideIndex).toBe(0);
+  });
+
+  it('listSlideComments filters by slide', () => {
+    const pres = createPptx({ title: 'Test' });
+    addComment(pres, 0, 'A', 'c1');
+    addComment(pres, 0, 'B', 'c2');
+    expect(listSlideComments(pres, 0)).toHaveLength(2);
+  });
+
+  it('getCommentText', () => {
+    const pres = createPptx({ title: 'Test' });
+    const c = addComment(pres, 0, 'Author', 'Text');
+    expect(getCommentText(pres, 0, c.id)).toBe('Text');
+  });
+
+  it('removeComment', () => {
+    const pres = createPptx({ title: 'Test' });
+    const c = addComment(pres, 0, 'Author', 'To remove');
+    expect(removeComment(pres, 0, c.id)).toBe(true);
+    expect(pres.slides[0].comments).toBeUndefined();
+  });
+
+  it('comments survive round-trip', async () => {
+    const pres = createPptx({ title: 'RT' });
+    addComment(pres, 0, 'Author', 'Round trip');
+    const path = join(tmpdir(), `omp-test-pptx-comments-${Date.now()}.pptx`);
+    await savePptx(pres, path);
+    const loaded = await loadPptx(path);
+    expect(loaded.semantic.slides[0].comments!.length).toBeGreaterThanOrEqual(1);
+    expect(loaded.semantic.slides[0].comments![0].authorName).toBe('Author');
+  });
+});
+
+describe('PPTX meta updates', () => {
+  it('updatePptxTitle', () => {
+    const pres = createPptx({ title: 'old' });
+    updatePptxTitle(pres, 'new');
+    expect(pres.meta.title).toBe('new');
+    expect(pres.meta.modified).toBeDefined();
+  });
+
+  it('all update functions work', () => {
+    const pres = createPptx({});
+    updatePptxCreator(pres, 'C');
+    updatePptxSubject(pres, 'S');
+    updatePptxDescription(pres, 'D');
+    updatePptxKeywords(pres, 'K');
+    updatePptxCategory(pres, 'Cat');
+    updatePptxLastModifiedBy(pres, 'LMB');
+    expect(pres.meta.creator).toBe('C');
+    expect(pres.meta.subject).toBe('S');
+    expect(pres.meta.description).toBe('D');
+    expect(pres.meta.keywords).toBe('K');
+    expect(pres.meta.category).toBe('Cat');
+    expect(pres.meta.lastModifiedBy).toBe('LMB');
+  });
+
+  it('namespace pptx.updateTitle', () => {
+    const pres = createPptx({});
+    pptx.updateTitle(pres, 'ns');
+    expect(pres.meta.title).toBe('ns');
+  });
+
+  it('pptx.toJSON', () => {
+    const pres = createPptx({ title: 'JSON' });
+    const json = toPptxJSON(pres);
+    expect(json.meta.title).toBe('JSON');
+    const str = toPptxJSONString(pres);
+    expect(str).toContain('JSON');
+    const nsJson = pptx.toJSON(pres);
+    expect(nsJson.meta.title).toBe('JSON');
+  });
+});
+
+describe('PPTX OMP namespace', () => {
+  it('OMP.pptx.create / updateTitle / validate / serialize', async () => {
+    const pres = OMP.pptx.create({ title: 'OMP' });
+    expect(pres.meta.title).toBe('OMP');
+
+    OMP.pptx.updateTitle(pres, 'Updated');
+    expect(pres.meta.title).toBe('Updated');
+
+    const issues = OMP.pptx.validate(pres);
+    expect(Array.isArray(issues)).toBe(true);
+
+    const buf = await OMP.pptx.serialize(pres);
+    expect(buf.byteLength).toBeGreaterThan(0);
+  });
+
+  it('OMP.pptx.addComment / listComments', () => {
+    const pres = OMP.pptx.create({ title: 'Test' });
+    OMP.pptx.addComment(pres, 0, 'Reviewer', 'Fix');
+    expect(OMP.pptx.listComments(pres)).toHaveLength(1);
   });
 });

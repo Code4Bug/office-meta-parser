@@ -10,8 +10,9 @@ import { fileURLToPath } from 'url';
 import { createDocx, loadDocx, saveDocx, validateDocx, serializeDocx, docx, updateDocxTitle, updateDocxCreator, updateDocxSubject, updateDocxDescription, updateDocxKeywords, updateDocxCategory, updateDocxLastModifiedBy, toDocxJSON, toDocxJSONString, saveDocxJSON, addComment, removeComment, listComments, getCommentText, markCommentDone, markCommentUndone, markInsert, markDelete, addFormatChange, clearRevision, listRevisions, hasPendingRevisions, acceptAllInserts, acceptAllDeletes, rejectAllInserts, rejectAllDeletes } from '../../src/docx/index.js';
 import { createXlsx, loadXlsx, saveXlsx, validateXlsx, serializeXlsx, xlsx, updateXlsxTitle, updateXlsxCreator, toXlsxJSON, toXlsxJSONString, saveXlsxJSON, addComment as addXlsxComment, removeComment as removeXlsxComment, listComments as listXlsxComments, getCommentText as getXlsxCommentText, updateComment as updateXlsxComment } from '../../src/xlsx/index.js';
 import { createPptx, loadPptx, savePptx, validatePptx, serializePptx, pptx, updatePptxTitle, updatePptxCreator, toPptxJSON, toPptxJSONString, savePptxJSON, addComment as addPptxComment, removeComment as removePptxComment, listComments as listPptxComments, listSlideComments, getCommentText as getPptxCommentText } from '../../src/pptx/index.js';
-import { detectFormat, validate, toBuffer, toJSON, toJSONString, saveToJSON, throwOnError, ValidationError, FormatError } from '../../src/core/index.js';
+import { detectFormat, validate, toBuffer, toJSON, toJSONString, saveToJSON, throwOnError, ValidationError, FormatError, createMetaOps } from '../../src/core/index.js';
 import type { ValidationIssue } from '../../src/core/index.js';
+import { OMP } from '../../src/omp.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -660,6 +661,153 @@ async function testPptxComments() {
 }
 
 // ============================================================
+// 13. createMetaOps 泛型工厂
+// ============================================================
+
+async function testCreateMetaOps() {
+  console.log('\n--- createMetaOps ---');
+
+  // 基本功能
+  const ops = createMetaOps<{ meta: { title?: string; creator?: string; modified?: string } }>();
+  assert(typeof ops.updateTitle === 'function', 'ops.updateTitle 是函数');
+  assert(typeof ops.updateCreator === 'function', 'ops.updateCreator 是函数');
+  assert(typeof ops.toJSON === 'function', 'ops.toJSON 是函数');
+  assert(typeof ops.toJSONString === 'function', 'ops.toJSONString 是函数');
+  assert(typeof ops.saveJSON === 'function', 'ops.saveJSON 是函数');
+
+  // updateTitle
+  const doc = { meta: { title: 'old' } };
+  ops.updateTitle(doc, 'new');
+  assertEqual(doc.meta.title, 'new', 'createMetaOps.updateTitle');
+  assert(doc.meta.modified !== undefined, 'createMetaOps 自动设置 modified');
+
+  // updateCreator
+  ops.updateCreator(doc, 'Alice');
+  assertEqual(doc.meta.creator, 'Alice', 'createMetaOps.updateCreator');
+
+  // toJSON
+  const json = ops.toJSON(doc);
+  assertEqual(json.meta.title, 'new', 'createMetaOps.toJSON');
+
+  // toJSONString
+  const str = ops.toJSONString(doc, 2);
+  const parsed = JSON.parse(str);
+  assertEqual(parsed.meta.creator, 'Alice', 'createMetaOps.toJSONString');
+
+  // saveJSON
+  await ops.saveJSON(doc, join(OUTPUT_DIR, 'createMetaOps.json'));
+  assert(existsSync(join(OUTPUT_DIR, 'createMetaOps.json')), 'createMetaOps.saveJSON 写入文件');
+
+  // 使用独立导入的 createMetaOps 创建 xlsx 专用 ops
+  const xlsxOps = createMetaOps<{ meta: { title?: string } }>();
+  const wb = { meta: { title: 'xlsx-test' } };
+  xlsxOps.updateTitle(wb, 'xlsx-updated');
+  assertEqual(wb.meta.title, 'xlsx-updated', 'createMetaOps 泛型用于 xlsx 类型');
+}
+
+// ============================================================
+// 14. OMP 统一命名空间
+// ============================================================
+
+async function testOmpNamespace() {
+  console.log('\n--- OMP Namespace ---');
+
+  // ---- 通用 API ----
+  assert(typeof OMP.detectFormat === 'function', 'OMP.detectFormat 存在');
+  assert(typeof OMP.validate === 'function', 'OMP.validate 存在');
+  assert(typeof OMP.toBuffer === 'function', 'OMP.toBuffer 存在');
+  assert(typeof OMP.toJSON === 'function', 'OMP.toJSON 存在');
+  assert(typeof OMP.toJSONString === 'function', 'OMP.toJSONString 存在');
+  assert(typeof OMP.saveToJSON === 'function', 'OMP.saveToJSON 存在');
+  assert(typeof OMP.loadFromFile === 'function', 'OMP.loadFromFile 存在');
+  assert(typeof OMP.saveToFile === 'function', 'OMP.saveToFile 存在');
+
+  // ---- DOCX ----
+  const doc = OMP.docx.create({ title: 'OMP测试' });
+  assertEqual(doc.meta.title, 'OMP测试', 'OMP.docx.create');
+
+  OMP.docx.updateTitle(doc, '新标题');
+  assertEqual(doc.meta.title, '新标题', 'OMP.docx.updateTitle');
+
+  OMP.docx.updateCreator(doc, '创建者');
+  assertEqual(doc.meta.creator, '创建者', 'OMP.docx.updateCreator');
+
+  OMP.docx.updateSubject(doc, '主题');
+  assertEqual(doc.meta.subject, '主题', 'OMP.docx.updateSubject');
+
+  OMP.docx.updateDescription(doc, '描述');
+  assertEqual(doc.meta.description, '描述', 'OMP.docx.updateDescription');
+
+  OMP.docx.updateKeywords(doc, '关键词');
+  assertEqual(doc.meta.keywords, '关键词', 'OMP.docx.updateKeywords');
+
+  OMP.docx.updateCategory(doc, '分类');
+  assertEqual(doc.meta.category, '分类', 'OMP.docx.updateCategory');
+
+  OMP.docx.updateLastModifiedBy(doc, '修改者');
+  assertEqual(doc.meta.lastModifiedBy, '修改者', 'OMP.docx.updateLastModifiedBy');
+
+  const issues = OMP.docx.validate(doc);
+  assert(Array.isArray(issues), 'OMP.docx.validate');
+
+  doc.body.blocks.push({ type: 'paragraph', runs: [{ text: '内容' }] });
+  const buf = await OMP.docx.serialize(doc);
+  assert(buf.byteLength > 0, 'OMP.docx.serialize');
+
+  const format = await OMP.detectFormat(buf);
+  assertEqual(format, 'docx', 'OMP.detectFormat');
+
+  // 批注
+  const run = { text: '段落文本' };
+  doc.body.blocks.push({ type: 'paragraph', runs: [run] });
+  OMP.docx.addComment(doc, run, '审阅者', '需要修改');
+  assertEqual(OMP.docx.listComments(doc).length, 1, 'OMP.docx.addComment');
+
+  // 修订
+  const run2 = { text: '新增文本' };
+  doc.body.blocks.push({ type: 'paragraph', runs: [run2] });
+  OMP.docx.markInsert(run2, '作者');
+  assertEqual(run2.revisionType, 'insert', 'OMP.docx.markInsert');
+
+  // ---- XLSX ----
+  const wb = OMP.xlsx.create({ title: 'OMP-XLSX' });
+  assertEqual(wb.meta.title, 'OMP-XLSX', 'OMP.xlsx.create');
+
+  OMP.xlsx.updateTitle(wb, '新标题');
+  assertEqual(wb.meta.title, '新标题', 'OMP.xlsx.updateTitle');
+
+  OMP.xlsx.addComment(wb, 0, 'A1', '作者', '批注内容');
+  assertEqual(OMP.xlsx.getCommentText(wb, 0, 'A1'), '批注内容', 'OMP.xlsx.addComment');
+  assertEqual(OMP.xlsx.listComments(wb).length, 1, 'OMP.xlsx.listComments');
+
+  assert(OMP.xlsx.updateComment(wb, 0, 'A1', '已更新'), 'OMP.xlsx.updateComment');
+  assertEqual(OMP.xlsx.getCommentText(wb, 0, 'A1'), '已更新', 'OMP.xlsx.updateComment 后文本');
+
+  assert(OMP.xlsx.removeComment(wb, 0, 'A1'), 'OMP.xlsx.removeComment');
+  assertEqual(OMP.xlsx.listComments(wb).length, 0, 'OMP.xlsx.removeComment 后');
+
+  // ---- PPTX ----
+  const pres = OMP.pptx.create({ title: 'OMP-PPTX' });
+  assertEqual(pres.meta.title, 'OMP-PPTX', 'OMP.pptx.create');
+
+  OMP.pptx.updateTitle(pres, '新标题');
+  assertEqual(pres.meta.title, '新标题', 'OMP.pptx.updateTitle');
+
+  OMP.pptx.addComment(pres, 0, '审核人', '需要修改');
+  assertEqual(OMP.pptx.listComments(pres).length, 1, 'OMP.pptx.addComment');
+
+  const slide0 = OMP.pptx.listSlideComments(pres, 0);
+  assertEqual(slide0.length, 1, 'OMP.pptx.listSlideComments');
+
+  // 通用 toBuffer / toJSON
+  const buf2 = OMP.toBuffer(buf);
+  assert(buf2.length > 0, 'OMP.toBuffer');
+
+  const json = OMP.toJSON(doc);
+  assertEqual(json.meta.title, '新标题', 'OMP.toJSON');
+}
+
+// ============================================================
 // 主入口
 // ============================================================
 
@@ -686,6 +834,8 @@ async function main() {
   await testRevisions();
   await testXlsxComments();
   await testPptxComments();
+  await testCreateMetaOps();
+  await testOmpNamespace();
 
   console.log('\n' + '='.repeat(60));
   console.log(`Results: ${passed} passed, ${failed} failed, ${passed + failed} total`);

@@ -1,36 +1,29 @@
-import {
-  updateTitle as _updateTitle,
-  updateSubject as _updateSubject,
-  updateCreator as _updateCreator,
-  updateDescription as _updateDescription,
-  updateKeywords as _updateKeywords,
-  updateLastModifiedBy as _updateLastModifiedBy,
-  updateCategory as _updateCategory,
-} from '../core/meta.js';
-import { toJSON as _toJSON, toJSONString as _toJSONString, saveToJSON as _saveToJSON } from '../core/io.js';
+import { createMetaOps } from '../core/meta.js';
 import type { PptxPresentation } from './types.js';
 
-export const updatePptxTitle = (pres: PptxPresentation, v: string) => _updateTitle(pres, v);
-export const updatePptxSubject = (pres: PptxPresentation, v: string) => _updateSubject(pres, v);
-export const updatePptxCreator = (pres: PptxPresentation, v: string) => _updateCreator(pres, v);
-export const updatePptxDescription = (pres: PptxPresentation, v: string) => _updateDescription(pres, v);
-export const updatePptxKeywords = (pres: PptxPresentation, v: string) => _updateKeywords(pres, v);
-export const updatePptxLastModifiedBy = (pres: PptxPresentation, v: string) => _updateLastModifiedBy(pres, v);
-export const updatePptxCategory = (pres: PptxPresentation, v: string) => _updateCategory(pres, v);
+const ops = createMetaOps<PptxPresentation>();
 
-export const toPptxJSON = (pres: PptxPresentation): PptxPresentation => _toJSON(pres);
-export const toPptxJSONString = (pres: PptxPresentation, space?: number): string => _toJSONString(pres, space);
-export const savePptxJSON = (pres: PptxPresentation, path: string, space?: number): Promise<void> => _saveToJSON(pres, path, space);
+export const updatePptxTitle = ops.updateTitle;
+export const updatePptxSubject = ops.updateSubject;
+export const updatePptxCreator = ops.updateCreator;
+export const updatePptxDescription = ops.updateDescription;
+export const updatePptxKeywords = ops.updateKeywords;
+export const updatePptxLastModifiedBy = ops.updateLastModifiedBy;
+export const updatePptxCategory = ops.updateCategory;
+
+export const toPptxJSON = ops.toJSON;
+export const toPptxJSONString = ops.toJSONString;
+export const savePptxJSON = ops.saveJSON;
 
 export const pptx = {
-  updateTitle: updatePptxTitle,
-  updateSubject: updatePptxSubject,
-  updateCreator: updatePptxCreator,
-  updateDescription: updatePptxDescription,
-  updateKeywords: updatePptxKeywords,
-  updateLastModifiedBy: updatePptxLastModifiedBy,
-  updateCategory: updatePptxCategory,
-  toJSON: toPptxJSON,
-  toJSONString: toPptxJSONString,
-  saveJSON: savePptxJSON,
+  updateTitle: ops.updateTitle,
+  updateSubject: ops.updateSubject,
+  updateCreator: ops.updateCreator,
+  updateDescription: ops.updateDescription,
+  updateKeywords: ops.updateKeywords,
+  updateLastModifiedBy: ops.updateLastModifiedBy,
+  updateCategory: ops.updateCategory,
+  toJSON: ops.toJSON,
+  toJSONString: ops.toJSONString,
+  saveJSON: ops.saveJSON,
 };

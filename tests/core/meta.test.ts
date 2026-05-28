@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseMeta, serializeMeta } from '../../src/core/meta.js';
+import { parseMeta, serializeMeta, createMetaOps } from '../../src/core/meta.js';
 import { parseXml } from '../../src/core/xml.js';
 
 describe('serializeMeta', () => {
@@ -172,5 +172,52 @@ describe('round-trip', () => {
     expect(parsed.modified).toBe(original.modified);
     expect(parsed.revision).toBe(original.revision);
     expect(parsed.category).toBe(original.category);
+  });
+});
+
+describe('createMetaOps', () => {
+  it('generates all 10 operations', () => {
+    const ops = createMetaOps();
+    expect(typeof ops.updateTitle).toBe('function');
+    expect(typeof ops.updateSubject).toBe('function');
+    expect(typeof ops.updateCreator).toBe('function');
+    expect(typeof ops.updateDescription).toBe('function');
+    expect(typeof ops.updateKeywords).toBe('function');
+    expect(typeof ops.updateLastModifiedBy).toBe('function');
+    expect(typeof ops.updateCategory).toBe('function');
+    expect(typeof ops.toJSON).toBe('function');
+    expect(typeof ops.toJSONString).toBe('function');
+    expect(typeof ops.saveJSON).toBe('function');
+  });
+
+  it('updateTitle works on generic holder', () => {
+    const ops = createMetaOps();
+    const doc = { meta: { title: 'old' } };
+    ops.updateTitle(doc, 'new');
+    expect(doc.meta.title).toBe('new');
+    expect(doc.meta.modified).toBeDefined();
+  });
+
+  it('updateCreator works on generic holder', () => {
+    const ops = createMetaOps();
+    const doc = { meta: {} };
+    ops.updateCreator(doc, 'Alice');
+    expect(doc.meta.creator).toBe('Alice');
+  });
+
+  it('toJSON strips rawXmlParts', () => {
+    const ops = createMetaOps();
+    const doc = { meta: { title: 'test' }, rawXmlParts: new Map([['a', 'b']]) };
+    const json = ops.toJSON(doc);
+    expect(json.meta.title).toBe('test');
+    expect(json.rawXmlParts).toBeUndefined();
+  });
+
+  it('toJSONString produces valid JSON', () => {
+    const ops = createMetaOps();
+    const doc = { meta: { title: 'hello' } };
+    const str = ops.toJSONString(doc, 2);
+    const parsed = JSON.parse(str);
+    expect(parsed.meta.title).toBe('hello');
   });
 });

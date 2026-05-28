@@ -1,4 +1,5 @@
 import { serializeXml } from './xml.js';
+import { toJSON, toJSONString, saveToJSON } from './io.js';
 import type { ParsedNode } from './types.js';
 
 export interface DocumentMeta {
@@ -142,4 +143,22 @@ export function serializeMeta(meta: DocumentMeta): string {
   };
 
   return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' + serializeXml(root);
+}
+
+/**
+ * 为任意持有 meta 的类型生成全套元数据 + JSON 操作
+ */
+export function createMetaOps<T extends MetaHolder>() {
+  return {
+    updateTitle: (doc: T, v: string) => updateTitle(doc, v),
+    updateSubject: (doc: T, v: string) => updateSubject(doc, v),
+    updateCreator: (doc: T, v: string) => updateCreator(doc, v),
+    updateDescription: (doc: T, v: string) => updateDescription(doc, v),
+    updateKeywords: (doc: T, v: string) => updateKeywords(doc, v),
+    updateLastModifiedBy: (doc: T, v: string) => updateLastModifiedBy(doc, v),
+    updateCategory: (doc: T, v: string) => updateCategory(doc, v),
+    toJSON: (doc: T): T => toJSON(doc),
+    toJSONString: (doc: T, space?: number): string => toJSONString(doc, space),
+    saveJSON: (doc: T, path: string, space?: number): Promise<void> => saveToJSON(doc, path, space),
+  };
 }

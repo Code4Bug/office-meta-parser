@@ -11,7 +11,7 @@ export { parseXml, serializeXml } from './xml.js';
 export { parseRels, serializeRels } from './rels.js';
 export { parseContentTypes, serializeContentTypes } from './content-type.js';
 export { unzip, zip } from './zip.js';
-export { parseMeta, serializeMeta, updateTitle, updateSubject, updateCreator, updateDescription, updateKeywords, updateLastModifiedBy, updateCategory } from './meta.js';
+export { parseMeta, serializeMeta, updateTitle, updateSubject, updateCreator, updateDescription, updateKeywords, updateLastModifiedBy, updateCategory, createMetaOps } from './meta.js';
 export type { DocumentMeta } from './meta.js';
 export { parseAppMeta, serializeAppMeta } from './app-meta.js';
 export type { AppMeta } from './app-meta.js';

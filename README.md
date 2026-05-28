@@ -12,6 +12,30 @@ npm install office-meta-parser
 
 ## 快速上手
 
+### 统一入口 OMP
+
+```typescript
+import { OMP } from 'office-meta-parser';
+
+// 通用 API
+const format = await OMP.detectFormat(buffer);
+const buf = OMP.toBuffer(arrayBuffer);
+
+// DOCX
+const doc = OMP.docx.create({ title: '报告', creator: '张三' });
+doc.body.blocks.push({ type: 'paragraph', runs: [{ text: '内容' }] });
+OMP.docx.updateTitle(doc, '新标题');
+await OMP.docx.save(doc, 'output.docx');
+
+// XLSX
+const wb = OMP.xlsx.create({ title: '报表' });
+OMP.xlsx.addComment(wb, 0, 'A1', '审核人', '请核实');
+
+// PPTX
+const pres = OMP.pptx.create({ title: '演示' });
+OMP.pptx.addComment(pres, 0, '审核人', '标题需修改');
+```
+
 ### 从文件加载
 
 ```typescript
@@ -202,22 +226,22 @@ for (const block of semantic.body.blocks) {
 #### 修改元数据
 
 ```typescript
-import { docx } from 'office-meta-parser/docx';
+import { OMP } from 'office-meta-parser';
 
-const { semantic } = await loadDocx('input.docx');
+const { semantic } = await OMP.docx.load('input.docx');
 
-docx.updateTitle(semantic, '新标题');
-docx.updateCreator(semantic, '新作者');
-docx.updateCategory(semantic, '合同');
-docx.updateLastModifiedBy(semantic, '系统');
+OMP.docx.updateTitle(semantic, '新标题');
+OMP.docx.updateCreator(semantic, '新作者');
+OMP.docx.updateCategory(semantic, '合同');
+OMP.docx.updateLastModifiedBy(semantic, '系统');
 
-await saveDocx(semantic, 'output.docx');
+await OMP.docx.save(semantic, 'output.docx');
 ```
 
 #### 批注操作
 
 ```typescript
-import { createDocx, addComment, listComments, markCommentDone, saveDocx } from 'office-meta-parser/docx';
+import { createDocx, addComment, listComments, getCommentText, markCommentDone, saveDocx } from 'office-meta-parser/docx';
 
 const doc = createDocx({ title: '审阅文档' });
 const run = { text: '待审核内容' };
@@ -228,7 +252,10 @@ const comment = addComment(doc, run, '审核人', '请补充数据来源');
 
 // 查看批注
 const comments = listComments(doc);
-console.log(comments[0].comment.content);  // 批注内容
+console.log(comments.length);  // 1
+
+// 获取批注纯文本
+console.log(getCommentText(doc, comment.id));  // → '请补充数据来源'
 
 // 标记已完成
 markCommentDone(doc, comment.id);
@@ -334,17 +361,19 @@ wb.sheets.push(
 #### 单元格批注
 
 ```typescript
-import { createXlsx, addComment, listComments, saveXlsx } from 'office-meta-parser/xlsx';
+import { createXlsx, addComment, listComments, listSheetComments, getCommentText, saveXlsx } from 'office-meta-parser/xlsx';
 
 const wb = createXlsx({ title: '审核表' });
 // 确保 sheet 有单元格数据
-wb.sheets[0].cells = [[{ value: '数据', type: 'string', formula: undefined }]];
+wb.sheets[0].cells = [[{ value: '数据', type: 'string' }]];
 
 // 添加批注
 addComment(wb, 0, 'A1', '审核人', '请核实数据来源');
 
-// 查看所有批注
-console.log(listComments(wb));
+// 查看批注
+console.log(listComments(wb));              // 跨所有 sheet
+console.log(listSheetComments(wb, 0));      // 指定 sheet
+console.log(getCommentText(wb, 0, 'A1'));   // → '请核实数据来源'
 
 await saveXlsx(wb, 'reviewed.xlsx');
 ```
@@ -426,7 +455,7 @@ for (let i = 0; i < semantic.slides.length; i++) {
 #### 幻灯片批注
 
 ```typescript
-import { createPptx, addComment, listComments, savePptx } from 'office-meta-parser/pptx';
+import { createPptx, addComment, listComments, listSlideComments, savePptx } from 'office-meta-parser/pptx';
 
 const pres = createPptx({ title: '审阅演示' });
 
@@ -435,8 +464,8 @@ addComment(pres, 0, '审核人', '标题字号太大', 100, 50);
 addComment(pres, 0, '经理', '需要补充数据');
 
 // 查看批注
-const comments = listComments(pres);
-console.log(comments.length);  // 2
+console.log(listComments(pres));            // 跨所有 slide
+console.log(listSlideComments(pres, 0));    // 指定 slide
 
 await savePptx(pres, 'reviewed.pptx');
 ```
@@ -596,11 +625,50 @@ app.get('/api/export/pptx', async (req, res) => {
 
 | 路径 | 内容 |
 |------|------|
-| `office-meta-parser` | 核心层（detectFormat / validate / toBuffer / toJSON 等） |
+| `office-meta-parser` | 核心层 + `OMP` 统一命名空间 |
 | `office-meta-parser/core` | 基础设施（XML / ZIP / 元数据） |
 | `office-meta-parser/docx` | Word 文档 |
 | `office-meta-parser/xlsx` | Excel 表格 |
 | `office-meta-parser/pptx` | PowerPoint 演示文稿 |
+
+### OMP 统一命名空间
+
+所有 API 均可通过 `OMP` 对象统一调用：
+
+```typescript
+import { OMP } from 'office-meta-parser';
+
+// 通用
+OMP.detectFormat(buffer)       // 检测格式
+OMP.validate(buffer)           // 校验
+OMP.toBuffer(arrayBuffer)      // 转 Buffer
+OMP.toJSON(semantic)           // 转 JSON
+OMP.loadFromFile(path)         // 读文件
+OMP.saveToFile(buffer, path)   // 写文件
+
+// 格式专属
+OMP.docx.create / .parse / .serialize / .load / .save / .validate
+OMP.xlsx.create / .parse / .serialize / .load / .save / .validate
+OMP.pptx.create / .parse / .serialize / .load / .save / .validate
+
+// 元数据
+OMP.docx.updateTitle / .updateCreator / .updateSubject / ...
+OMP.xlsx.updateTitle / .updateCreator / ...
+OMP.pptx.updateTitle / .updateCreator / ...
+
+// 批注
+OMP.docx.addComment / .removeComment / .listComments / ...
+OMP.xlsx.addComment / .removeComment / .listComments / ...
+OMP.pptx.addComment / .removeComment / .listComments / ...
+
+// 修订（仅 DOCX）
+OMP.docx.markInsert / .markDelete / .acceptAllInserts / ...
+
+// JSON
+OMP.docx.toJSON / .toJSONString / .saveJSON
+OMP.xlsx.toJSON / .toJSONString / .saveJSON
+OMP.pptx.toJSON / .toJSONString / .saveJSON
+```
 
 ---
 
@@ -621,31 +689,36 @@ app.get('/api/export/pptx', async (req, res) => {
 #### 元数据更新
 
 ```typescript
-import { docx, updateDocxTitle, updateDocxCreator } from 'office-meta-parser/docx';
+import { docx, updateDocxTitle } from 'office-meta-parser/docx';
+import { OMP } from 'office-meta-parser';
 
-// 方式 1: 命名空间
+// 方式 1: OMP 统一入口
+OMP.docx.updateTitle(doc, '新标题');
+OMP.docx.updateCreator(doc, '张三');
+
+// 方式 2: 命名空间
 docx.updateTitle(doc, '新标题');
-docx.updateCreator(doc, '张三');
-docx.updateSubject(doc, '主题');
-docx.updateDescription(doc, '描述');
-docx.updateKeywords(doc, '关键词');
-docx.updateCategory(doc, '分类');
-docx.updateLastModifiedBy(doc, '李四');
 
-// 方式 2: 独立函数
+// 方式 3: 独立函数
 updateDocxTitle(doc, '新标题');
+
+// 7 个字段均可操作：updateTitle / updateSubject / updateCreator /
+// updateDescription / updateKeywords / updateCategory / updateLastModifiedBy
 ```
 
 #### JSON 导出
 
 ```typescript
-import { toDocxJSON, toDocxJSONString, saveDocxJSON, docx } from 'office-meta-parser/docx';
+import { toDocxJSON, docx } from 'office-meta-parser/docx';
+import { OMP } from 'office-meta-parser';
 
 const json = toDocxJSON(doc);              // → DocxDocument 对象
-const str  = toDocxJSONString(doc, 2);     // → JSON 字符串
-await saveDocxJSON(doc, 'output.json');     // → 写文件
+const str  = docx.toJSONString(doc, 2);    // → JSON 字符串
+await docx.saveJSON(doc, 'output.json');   // → 写文件
 
-// 命名空间方式
+// OMP 方式
+OMP.docx.toJSON(doc);
+OMP.docx.saveJSON(doc, 'output.json');
 docx.toJSON(doc);
 docx.toJSONString(doc);
 docx.saveJSON(doc, 'output.json');
@@ -725,24 +798,33 @@ clearRevision(run);
 
 ```typescript
 import { xlsx } from 'office-meta-parser/xlsx';
+import { OMP } from 'office-meta-parser';
 
+// OMP 方式
+OMP.xlsx.updateTitle(wb, '销售报表');
+OMP.xlsx.updateCreator(wb, '王五');
+
+// 命名空间方式
 xlsx.updateTitle(wb, '销售报表');
-xlsx.updateCreator(wb, '王五');
 ```
 
 #### JSON 导出
 
 ```typescript
-import { toXlsxJSON, saveXlsxJSON, xlsx } from 'office-meta-parser/xlsx';
+import { xlsx } from 'office-meta-parser/xlsx';
+import { OMP } from 'office-meta-parser';
 
 xlsx.toJSON(wb);
 xlsx.saveJSON(wb, 'workbook.json');
+
+// OMP 方式
+OMP.xlsx.toJSON(wb);
 ```
 
 #### 批注操作
 
 ```typescript
-import { addComment, removeComment, listComments, getCommentText, updateComment } from 'office-meta-parser/xlsx';
+import { addComment, removeComment, listComments, listSheetComments, getCommentText, updateComment } from 'office-meta-parser/xlsx';
 
 // 添加批注 — 按单元格引用定位
 addComment(wb, 0, 'A1', '张三', '需要修改');
@@ -780,18 +862,27 @@ removeComment(wb, 0, 'B2');
 
 ```typescript
 import { pptx } from 'office-meta-parser/pptx';
+import { OMP } from 'office-meta-parser';
 
+// OMP 方式
+OMP.pptx.updateTitle(pres, '产品介绍');
+OMP.pptx.updateCreator(pres, '赵六');
+
+// 命名空间方式
 pptx.updateTitle(pres, '产品介绍');
-pptx.updateCreator(pres, '赵六');
 ```
 
 #### JSON 导出
 
 ```typescript
-import { toPptxJSON, savePptxJSON, pptx } from 'office-meta-parser/pptx';
+import { pptx } from 'office-meta-parser/pptx';
+import { OMP } from 'office-meta-parser';
 
 pptx.toJSON(pres);
 pptx.saveJSON(pres, 'presentation.json');
+
+// OMP 方式
+OMP.pptx.toJSON(pres);
 ```
 
 #### 批注操作
@@ -845,12 +936,23 @@ const result = await validate(buffer);
 #### 元数据更新（泛型）
 
 ```typescript
-import { updateTitle, updateCreator, updateSubject, updateDescription,
-         updateKeywords, updateCategory, updateLastModifiedBy } from 'office-meta-parser';
+import { updateTitle, updateCreator, createMetaOps } from 'office-meta-parser';
 
-// 适用于任意格式的语义模型
+// 直接使用泛型函数 — 适用于任意持有 meta 的对象
 updateTitle(doc, '新标题');
 updateCreator(wb, '张三');
+
+// createMetaOps 工厂 — 为自定义类型生成全套操作
+import type { DocumentMeta } from 'office-meta-parser';
+
+interface MyDoc { meta: DocumentMeta; /* ... */ }
+const myOps = createMetaOps<MyDoc>();
+
+myOps.updateTitle(myDoc, '新标题');
+myOps.updateCreator(myDoc, '张三');
+myOps.toJSON(myDoc);
+myOps.saveJSON(myDoc, 'output.json');
+// 共 10 个操作：7 个元数据 + toJSON / toJSONString / saveJSON
 ```
 
 #### XML / ZIP
@@ -1002,6 +1104,13 @@ interface TextRun {
   highlight?: string;
   commentId?: string;      // 关联批注
 }
+
+interface Comment {
+  id: string;
+  author: string;
+  date: string;
+  content: Paragraph[];    // 批注内容（结构化段落）
+}
 ```
 
 ### XLSX
@@ -1018,17 +1127,28 @@ interface Sheet {
   name: string;
   cells: Cell[][];
   mergedCells: MergedCell[];
+  columnWidths: number[];
+  rowHeights: number[];
   hyperlinks: Hyperlink[];
   autoFilter?: AutoFilter;
   dataValidations?: DataValidation[];
   conditionalFormats?: ConditionalFormat[];
   frozenPanes?: FrozenPanes;
+  comments?: SheetComment[];
+  tables?: ExcelTable[];
 }
 
 interface Cell {
   type: 'string' | 'sharedString' | 'number' | 'boolean' | 'formula' | 'error';
   value: string | number | boolean | null;
   formula?: string;
+}
+
+interface SheetComment {
+  ref: string;           // 单元格引用，如 'A1'
+  authorId: number;
+  text: string;
+  richText?: RichTextRun[];
 }
 ```
 
@@ -1046,12 +1166,24 @@ interface PptxPresentation {
 
 interface Slide {
   elements: SlideElement[];
+  layout?: string;
   transition?: Transition;
   notes?: string;
   animations?: Animation[];
+  comments?: SlideComment[];
 }
 
 type SlideElement = TextShape | ImageShape | GroupShape | TableShape | MediaShape;
+
+interface SlideComment {
+  id: string;
+  authorId: number;
+  authorName: string;
+  text: string;
+  date?: string;
+  position?: { x: number; y: number };
+  replies?: SlideComment[];
+}
 ```
 
 ---
@@ -1059,7 +1191,7 @@ type SlideElement = TextShape | ImageShape | GroupShape | TableShape | MediaShap
 ## 测试
 
 ```bash
-npm test              # 运行全部测试（89 文件 / 454 用例）
+npm test              # 运行全部测试（89 文件 / 507 用例）
 npm run test:codec    # 编解码集成测试
 npm run typecheck     # 类型检查
 ```
