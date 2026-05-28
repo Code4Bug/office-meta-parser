@@ -150,12 +150,11 @@ export function serializeContentTypes(sheets: Sheet[], extraContentTypes?: Conte
   return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' + serializeXml(root);
 }
 
-export function serializeCommentsXml(sheetIndex: number, authorName: string, comments: import('../types.js').SheetComment[]): string {
-  const authors = [authorName];
+export function serializeCommentsXml(sheetIndex: number, authors: string[], comments: import('../types.js').SheetComment[]): string {
   const authorsNode = {
     tag: 'authors',
     attrs: {},
-    children: [{ tag: 'author', attrs: {}, children: [authorName] }],
+    children: authors.map(a => ({ tag: 'author', attrs: {}, children: [a] })),
   };
 
   const commentList = comments.map(c => ({

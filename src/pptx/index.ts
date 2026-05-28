@@ -1,7 +1,7 @@
 import { unzip, zip } from '../core/zip.js';
 import { parseRels } from '../core/rels.js';
 import { parseContentTypes } from '../core/content-type.js';
-import { parseXml } from '../core/xml.js';
+import { parseXml, escapeXmlAttr } from '../core/xml.js';
 import { serializeMeta } from '../core/meta.js';
 import { serializeAppMeta } from '../core/app-meta.js';
 import { serializeCustomProperties } from '../core/custom-meta.js';
@@ -276,13 +276,13 @@ export async function writePptxToStream(pres: PptxPresentation, stream: import('
 
 function buildPackageRels(pres?: PptxPresentation): string {
   const rels: string[] = [
-    `  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="ppt/presentation.xml"/>`,
-    `  <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/>`,
-    `  <Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/>`,
+    `  <Relationship Id="${escapeXmlAttr('rId1')}" Type="${escapeXmlAttr('http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument')}" Target="${escapeXmlAttr('ppt/presentation.xml')}"/>`,
+    `  <Relationship Id="${escapeXmlAttr('rId2')}" Type="${escapeXmlAttr('http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties')}" Target="${escapeXmlAttr('docProps/core.xml')}"/>`,
+    `  <Relationship Id="${escapeXmlAttr('rId3')}" Type="${escapeXmlAttr('http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties')}" Target="${escapeXmlAttr('docProps/app.xml')}"/>`,
   ];
 
   if (pres?.customProperties && pres.customProperties.length > 0) {
-    rels.push(`  <Relationship Id="rId4" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/custom-properties" Target="docProps/custom.xml"/>`);
+    rels.push(`  <Relationship Id="${escapeXmlAttr('rId4')}" Type="${escapeXmlAttr('http://schemas.openxmlformats.org/officeDocument/2006/relationships/custom-properties')}" Target="${escapeXmlAttr('docProps/custom.xml')}"/>`);
   }
 
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>

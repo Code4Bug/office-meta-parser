@@ -221,7 +221,7 @@ export function parseParagraphProperties(node: ParsedNode): ParagraphProperties 
           if (typeof tabChild === 'string') continue;
           if (tabChild.tag === 'w:tab' && tabChild.attrs['w:val'] && tabChild.attrs['w:pos']) {
             props.tabs.push({
-              position: parseInt(tabChild.attrs['w:pos'], 10),
+              position: parseInt(tabChild.attrs['w:pos'], 10) || 0,
               alignment: tabChild.attrs['w:val'] as any,
               ...(tabChild.attrs['w:leader'] ? { leader: tabChild.attrs['w:leader'] as any } : {}),
             });

@@ -105,8 +105,9 @@ export function updateComment(
 // ---- 内部辅助 ----
 
 function ensureAuthor(wb: XlsxWorkbook, author: string): number {
-  // XLSX 批注的 authorId 是 authors 列表的索引
-  // 当前序列化器每次都用 'Author'，这里简化处理：返回 0
-  // 后续可扩展为维护 authors 列表
-  return 0;
+  if (!wb.authors) wb.authors = [];
+  const existing = wb.authors.indexOf(author);
+  if (existing >= 0) return existing;
+  wb.authors.push(author);
+  return wb.authors.length - 1;
 }

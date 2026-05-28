@@ -1,7 +1,5 @@
 import type { DocxDocument, DocxBlock, Paragraph, TextRun, Comment, CommentExtended } from './types.js';
 
-let _nextCommentId = 1;
-
 export interface CommentInfo {
   comment: Comment;
   blockIndex: number;
@@ -9,12 +7,15 @@ export interface CommentInfo {
 }
 
 /**
- * 生成下一个可用的批注 ID
+ * 生成下一个可用的批注 ID（从现有批注中推算最大 ID）
  */
 function nextCommentId(doc: DocxDocument): string {
-  const existing = new Set((doc.comments || []).map(c => c.id));
-  while (existing.has(String(_nextCommentId))) _nextCommentId++;
-  return String(_nextCommentId++);
+  const existing = doc.comments || [];
+  const maxId = existing.reduce((max, c) => {
+    const num = parseInt(c.id, 10);
+    return isNaN(num) ? max : Math.max(max, num);
+  }, 0);
+  return String(maxId + 1);
 }
 
 /**

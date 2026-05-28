@@ -28,7 +28,7 @@ function isKnownPart(path: string): boolean {
 }
 
 export function rawToSemantic(raw: RawDocument): XlsxWorkbook {
-  const sheets = extractSheets(raw);
+  const { sheets, authors } = extractSheets(raw);
   const definedNames = extractDefinedNames(raw);
 
   if (definedNames) {
@@ -47,6 +47,8 @@ export function rawToSemantic(raw: RawDocument): XlsxWorkbook {
     definedNames,
     theme: extractTheme(raw),
   };
+
+  if (authors.length > 0) result.authors = authors;
 
   const appXml = raw.parts.get('docProps/app.xml');
   if (appXml) result.appMeta = parseAppMeta(appXml);

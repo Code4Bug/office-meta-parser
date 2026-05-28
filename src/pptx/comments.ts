@@ -5,20 +5,20 @@ export interface CommentInfo {
   slideIndex: number;
 }
 
-let _nextCommentId = 1;
-
 /**
- * 生成下一个可用的批注 ID
+ * 生成下一个可用的批注 ID（从现有批注中推算最大 ID）
  */
 function nextCommentId(pres: PptxPresentation): string {
-  const existing = new Set<string>();
+  let maxId = 0;
   for (const slide of pres.slides) {
     if (slide.comments) {
-      for (const c of slide.comments) existing.add(c.id);
+      for (const c of slide.comments) {
+        const num = parseInt(c.id, 10);
+        if (!isNaN(num) && num > maxId) maxId = num;
+      }
     }
   }
-  while (existing.has(String(_nextCommentId))) _nextCommentId++;
-  return String(_nextCommentId++);
+  return String(maxId + 1);
 }
 
 /**

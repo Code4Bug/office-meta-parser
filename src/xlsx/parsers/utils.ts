@@ -22,10 +22,10 @@ export function getTextContent(node: ParsedNode): string {
 }
 
 export function parseCellRef(ref: string): { row: number; col: number } | null {
-  const match = ref.match(/^([A-Z]+)(\d+)$/);
+  const match = ref.match(/^([A-Za-z]+)(\d+)$/);
   if (!match) return null;
 
-  const colStr = match[1];
+  const colStr = match[1].toUpperCase();
   const rowStr = match[2];
 
   let col = 0;
@@ -35,6 +35,7 @@ export function parseCellRef(ref: string): { row: number; col: number } | null {
   col -= 1; // 0-based
 
   const row = parseInt(rowStr, 10) - 1; // 0-based
+  if (isNaN(row)) return null;
 
   return { row, col };
 }

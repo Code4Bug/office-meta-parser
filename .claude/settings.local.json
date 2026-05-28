@@ -28,7 +28,14 @@
       "Bash(awk '/^### 已完成 - 解析$/,/^### 已完成 - 序列化$/' /Users/edward/Documents/workspace/projects/office-meta-parser/docs/coverage-checklist.md)",
       "Bash(awk '/^## PPTX$/,/^## Round-trip/' /Users/edward/Documents/workspace/projects/office-meta-parser/docs/coverage-checklist.md)",
       "Bash(awk '/^### 已完成 - 解析$/,/^### 已完成 - 序列化$/')",
-      "Bash(grep -n '^---$' /Users/edward/Documents/workspace/projects/office-meta-parser/README.md)"
+      "Bash(grep -n '^---$' /Users/edward/Documents/workspace/projects/office-meta-parser/README.md)",
+      "Bash(git -C /Users/edward/Documents/workspace/projects/office-meta-parser ls-files tests/logs/)",
+      "Bash(git -C /Users/edward/Documents/workspace/projects/office-meta-parser ls-files tests/output/)",
+      "Bash(git -C /Users/edward/Documents/workspace/projects/office-meta-parser ls-files tests/input/)",
+      "Bash(git -C /Users/edward/Documents/workspace/projects/office-meta-parser ls-files '*.DS_Store')",
+      "Bash(git *)",
+      "Bash(grep -rn 'Id=\"\\\\${' src/ --include=\"*.ts\")",
+      "Bash(grep -rn 'Type=\"\\\\${' src/ --include=\"*.ts\")"
     ]
   }
 }

@@ -24,7 +24,7 @@ export function semanticToXml(wb: XlsxWorkbook): XlsxXmlParts {
     if (sheet.comments && sheet.comments.length > 0) {
       comments.push({
         path: `xl/comments${i + 1}.xml`,
-        xml: serializeCommentsXml(i, 'Author', sheet.comments),
+        xml: serializeCommentsXml(i, wb.authors || ['Author'], sheet.comments),
       });
     }
   });

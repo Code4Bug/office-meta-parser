@@ -1,7 +1,7 @@
 import { unzip, zip } from '../core/zip.js';
 import { parseRels } from '../core/rels.js';
 import { parseContentTypes } from '../core/content-type.js';
-import { parseXml, serializeXml } from '../core/xml.js';
+import { parseXml, serializeXml, escapeXmlAttr } from '../core/xml.js';
 import { serializeMeta } from '../core/meta.js';
 import { serializeAppMeta } from '../core/app-meta.js';
 import { serializeCustomProperties } from '../core/custom-meta.js';
@@ -274,8 +274,8 @@ export async function serializeDocx(doc: DocxDocument): Promise<ArrayBuffer> {
     for (const [path, rels] of doc.extraRels) {
       if (generatedRels.has(path)) continue;
       const relsXml = rels.map(rel => {
-        let attrs = `Id="${rel.id}" Type="${rel.type}" Target="${rel.target}"`;
-        if (rel.targetMode) attrs += ` TargetMode="${rel.targetMode}"`;
+        let attrs = `Id="${escapeXmlAttr(rel.id)}" Type="${escapeXmlAttr(rel.type)}" Target="${escapeXmlAttr(rel.target)}"`;
+        if (rel.targetMode) attrs += ` TargetMode="${escapeXmlAttr(rel.targetMode)}"`;
         return `  <Relationship ${attrs}/>`;
       }).join('\n');
       const xml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">\n${relsXml}\n</Relationships>`;
@@ -479,9 +479,9 @@ function buildWordRels(doc: DocxDocument): string {
   }
 
   const relsXml = rels.map(rel => {
-    let attrs = `Id="${rel.id}" Type="${rel.type}" Target="${rel.target}"`;
+    let attrs = `Id="${escapeXmlAttr(rel.id)}" Type="${escapeXmlAttr(rel.type)}" Target="${escapeXmlAttr(rel.target)}"`;
     if (rel.targetMode) {
-      attrs += ` TargetMode="${rel.targetMode}"`;
+      attrs += ` TargetMode="${escapeXmlAttr(rel.targetMode)}"`;
     }
     return `  <Relationship ${attrs}/>`;
   }).join('\n');

@@ -86,18 +86,15 @@ export async function validate(buffer: ArrayBuffer): Promise<UnifiedValidationRe
   const issues: ValidationIssue[] = [];
   try {
     if (format === 'docx') {
-      const { parseDocx } = await import('../docx/index.js');
-      const { validateDocx } = await import('../docx/index.js');
+      const { parseDocx, validateDocx } = await import('../docx/index.js');
       const { semantic } = await parseDocx(buffer);
       issues.push(...validateDocx(semantic));
     } else if (format === 'xlsx') {
-      const { parseXlsx } = await import('../xlsx/index.js');
-      const { validateXlsx } = await import('../xlsx/index.js');
+      const { parseXlsx, validateXlsx } = await import('../xlsx/index.js');
       const { semantic } = await parseXlsx(buffer);
       issues.push(...validateXlsx(semantic));
     } else if (format === 'pptx') {
-      const { parsePptx } = await import('../pptx/index.js');
-      const { validatePptx } = await import('../pptx/index.js');
+      const { parsePptx, validatePptx } = await import('../pptx/index.js');
       const { semantic } = await parsePptx(buffer);
       issues.push(...validatePptx(semantic));
     }

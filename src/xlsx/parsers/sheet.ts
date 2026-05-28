@@ -11,13 +11,16 @@ import { extractAutoFilter, extractDataValidations, extractConditionalFormats, e
 import { extractImages } from './image.js';
 import { findChild, parseCellRef } from './utils.js';
 
-export function extractSheets(raw: RawDocument): Sheet[] {
+export type ExtractSheetsResult = { sheets: Sheet[]; authors: string[] };
+
+export function extractSheets(raw: RawDocument): ExtractSheetsResult {
   const sharedStrings = extractSharedStrings(raw);
+  const allAuthors: string[] = [];
 
   const workbookXml = raw.parts.get('xl/workbook.xml');
   if (workbookXml) {
     const sheetsNode = findChild(workbookXml, 'sheets');
-    if (!sheetsNode) return [];
+    if (!sheetsNode) return { sheets: [], authors: [] };
 
     const sheets: Sheet[] = [];
     for (const child of sheetsNode.children) {
@@ -28,20 +31,24 @@ export function extractSheets(raw: RawDocument): Sheet[] {
       const state = parseSheetState(child.attrs['state']);
       const sheetPath = findSheetPath(raw, relId);
 
-      sheets.push(buildSheet(raw, name, sheetPath, sharedStrings, state, relId));
+      const { sheet, authors } = buildSheet(raw, name, sheetPath, sharedStrings, state, relId);
+      sheets.push(sheet);
+      if (authors) allAuthors.push(...authors);
     }
 
-    return sheets;
+    return { sheets, authors: allAuthors };
   }
 
   // Fallback: scan for worksheet parts directly
   const sheets: Sheet[] = [];
   for (const [path] of raw.parts) {
     if (path.startsWith('xl/worksheets/sheet') && path.endsWith('.xml')) {
-      sheets.push(buildSheet(raw, path.replace('xl/worksheets/', '').replace('.xml', ''), path, sharedStrings));
+      const { sheet, authors } = buildSheet(raw, path.replace('xl/worksheets/', '').replace('.xml', ''), path, sharedStrings);
+      sheets.push(sheet);
+      if (authors) allAuthors.push(...authors);
     }
   }
-  return sheets;
+  return { sheets, authors: allAuthors };
 }
 
 function parseSheetState(val?: string): 'visible' | 'hidden' | 'veryHidden' | undefined {
@@ -57,7 +64,7 @@ function buildSheet(
   sharedStrings: SharedStringEntry[],
   state?: 'visible' | 'hidden' | 'veryHidden',
   _relId?: string,
-): Sheet {
+): { sheet: Sheet; authors: string[] | undefined } {
   const sheet: Sheet = {
     name,
     cells: sheetPath ? extractCells(raw, sheetPath, sharedStrings) : [],
@@ -74,6 +81,7 @@ function buildSheet(
 
   if (state) sheet.state = state;
 
+  let authors: string[] | undefined;
   if (sheetPath) {
     const wsXml = raw.parts.get(sheetPath);
     if (wsXml) {
@@ -84,12 +92,16 @@ function buildSheet(
       extractPageSetupProps(wsXml, sheet);
       extractHeaderFooterProps(wsXml, sheet);
       extractSheetProtection(wsXml, sheet);
-      sheet.comments = extractComments(raw, sheetPath);
+      const commentsResult = extractComments(raw, sheetPath);
+      if (commentsResult) {
+        sheet.comments = commentsResult.comments;
+        authors = commentsResult.authors;
+      }
       sheet.tables = extractTables(raw, sheetPath);
     }
   }
 
-  return sheet;
+  return { sheet, authors };
 }
 
 function findSheetPath(raw: RawDocument, relId: string): string | undefined {
@@ -339,7 +351,9 @@ function getDirectText(node: ParsedNode): string {
   return '';
 }
 
-function extractComments(raw: RawDocument, sheetPath: string): SheetComment[] | undefined {
+export type ExtractCommentsResult = { authors: string[]; comments: SheetComment[] };
+
+function extractComments(raw: RawDocument, sheetPath: string): ExtractCommentsResult | undefined {
   const sheetName = sheetPath.substring(sheetPath.lastIndexOf('/') + 1).replace('.xml', '');
   const commentsPath = `xl/comments${sheetName.replace('sheet', '')}.xml`;
 
@@ -379,7 +393,7 @@ function extractComments(raw: RawDocument, sheetPath: string): SheetComment[] | 
     }
   }
 
-  return comments.length > 0 ? comments : undefined;
+  return comments.length > 0 ? { authors, comments } : undefined;
 }
 
 function extractTables(raw: RawDocument, sheetPath: string): ExcelTable[] | undefined {

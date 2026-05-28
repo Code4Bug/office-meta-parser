@@ -12,6 +12,7 @@ export interface XlsxWorkbook {
   sheets: Sheet[];
   styles: CellStyleDefinitions;
   sharedStrings: SharedStringEntry[];
+  authors?: string[];
   definedNames?: DefinedName[];
   theme?: ThemeDefinition;
   appMeta?: AppMeta;

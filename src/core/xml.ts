@@ -22,6 +22,10 @@ const builderOptions = {
   textNodeName: '__text',
 };
 
+export function escapeXmlAttr(value: string): string {
+  return value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 export function parseXml(xml: string): ParsedNode {
   const parser = new XMLParser(parserOptions);
   const result = parser.parse(xml);
