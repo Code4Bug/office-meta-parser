@@ -1,8 +1,10 @@
 {
   "name": "@turing-weique/office-meta-parser",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "license": "Apache-2.0",
   "type": "module",
+  "sideEffects": false,
+  "files": ["dist"],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "exports": {
