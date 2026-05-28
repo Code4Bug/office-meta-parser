@@ -1,8 +1,6 @@
 # office-meta-parser
 
-[![npm version](https://img.shields.io/npm/v/@turing-weique/office-meta-parser)](https://www.npmjs.com/package/@turing-weique/office-meta-parser)
-[![npm downloads](https://img.shields.io/npm/dm/@turing-weique/office-meta-parser)](https://www.npmjs.com/package/@turing-weique/office-meta-parser)
-[![license](https://img.shields.io/npm/l/@turing-weique/office-meta-parser)](https://github.com/anthropics/office-meta-parser/blob/main/LICENSE)
+[![npm version](https://img.shields.io/npm/v/@turing-weique/office-meta-parser)](https://www.npmjs.com/package/@turing-weique/office-meta-parser)[![npm downloads](https://img.shields.io/npm/dm/@turing-weique/office-meta-parser)](https://www.npmjs.com/package/@turing-weique/office-meta-parser)[![license](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](./LICENSE)
 
 纯 TypeScript 实现的 Office Open XML (OOXML) 解析与序列化库，支持 DOCX、XLSX、PPTX 格式。
 
@@ -1209,4 +1207,4 @@ npm run typecheck     # 类型检查
 
 ## 许可
 
-MIT
+[Apache License 2.0](./LICENSE)
