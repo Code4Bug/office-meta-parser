@@ -2,107 +2,107 @@
 
 [![npm version](https://img.shields.io/npm/v/@turing-weique/office-meta-parser)](https://www.npmjs.com/package/@turing-weique/office-meta-parser)[![npm downloads](https://img.shields.io/npm/dm/@turing-weique/office-meta-parser)](https://www.npmjs.com/package/@turing-weique/office-meta-parser)[![license](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](./LICENSE)
 
-[中文](./README.md) | [English](./README.en.md)
+[中文](./README.md) | English
 
-纯 TypeScript 实现的 Office Open XML (OOXML) 解析与序列化库，支持 DOCX、XLSX、PPTX 格式。
+A pure TypeScript library for parsing and serializing Office Open XML (OOXML) documents — DOCX, XLSX, and PPTX.
 
-零原生依赖，可在 Node.js 和浏览器环境中运行。
+Zero native dependencies. Runs in both Node.js and browser environments.
 
-## 安装
+## Installation
 
 ```bash
 npm install @turing-weique/office-meta-parser
 ```
 
-## 快速上手
+## Quick Start
 
-### 统一入口 OMP
+### Unified Namespace (OMP)
 
 ```typescript
 import { OMP } from '@turing-weique/office-meta-parser';
 
-// 通用 API
+// Common APIs
 const format = await OMP.detectFormat(buffer);
 const buf = OMP.toBuffer(arrayBuffer);
 
 // DOCX
-const doc = OMP.docx.create({ title: '报告', creator: '张三' });
-doc.body.blocks.push({ type: 'paragraph', runs: [{ text: '内容' }] });
-OMP.docx.updateTitle(doc, '新标题');
+const doc = OMP.docx.create({ title: 'Report', creator: 'Alice' });
+doc.body.blocks.push({ type: 'paragraph', runs: [{ text: 'Content' }] });
+OMP.docx.updateTitle(doc, 'New Title');
 await OMP.docx.save(doc, 'output.docx');
 
 // XLSX
-const wb = OMP.xlsx.create({ title: '报表' });
-OMP.xlsx.addComment(wb, 0, 'A1', '审核人', '请核实');
+const wb = OMP.xlsx.create({ title: 'Sales Report' });
+OMP.xlsx.addComment(wb, 0, 'A1', 'Reviewer', 'Please verify');
 
 // PPTX
-const pres = OMP.pptx.create({ title: '演示' });
-OMP.pptx.addComment(pres, 0, '审核人', '标题需修改');
+const pres = OMP.pptx.create({ title: 'Slides' });
+OMP.pptx.addComment(pres, 0, 'Reviewer', 'Title needs revision');
 ```
 
-### 从文件加载
+### Load from File
 
 ```typescript
 import { loadDocx, saveDocx } from 'office-meta-parser/docx';
 
-// 加载 → 修改 → 保存
+// Load → Modify → Save
 const { semantic } = await loadDocx('report.docx');
 semantic.body.blocks.push({
   type: 'paragraph',
-  runs: [{ text: '新增段落', bold: true }],
+  runs: [{ text: 'New paragraph', bold: true }],
 });
 await saveDocx(semantic, 'output.docx');
 ```
 
-### 从零创建
+### Create from Scratch
 
 ```typescript
 import { createDocx, docx, saveDocx } from 'office-meta-parser/docx';
 
-const doc = createDocx({ title: '月度报告', creator: '张三' });
+const doc = createDocx({ title: 'Monthly Report', creator: 'Alice' });
 
-docx.updateTitle(doc, '2024年5月月度报告');
-docx.updateCategory(doc, '工作报告');
+docx.updateTitle(doc, 'Monthly Report — May 2024');
+docx.updateCategory(doc, 'Work Report');
 
 doc.body.blocks.push(
-  { type: 'paragraph', runs: [{ text: '一、概述', bold: true, fontSize: 28 }] },
-  { type: 'paragraph', runs: [{ text: '本月完成了核心功能开发。' }] },
+  { type: 'paragraph', runs: [{ text: '1. Overview', bold: true, fontSize: 28 }] },
+  { type: 'paragraph', runs: [{ text: 'Core features were completed this month.' }] },
 );
 
 await saveDocx(doc, 'report.docx');
 ```
 
-### Buffer 级操作
+### Buffer-Level Operations
 
 ```typescript
 import { parseDocx, serializeDocx } from 'office-meta-parser/docx';
 
-// 解析 ArrayBuffer
+// Parse ArrayBuffer
 const { raw, semantic } = await parseDocx(arrayBuffer);
 
-// 序列化为 ArrayBuffer
+// Serialize to ArrayBuffer
 const output = await serializeDocx(semantic);
 ```
 
 ---
 
-## 使用指南
+## Usage Guide
 
-### 一、文件读写
+### 1. File I/O
 
-#### 加载本地文件
+#### Load Local Files
 
 ```typescript
 import { loadDocx, saveDocx } from 'office-meta-parser/docx';
 import { loadXlsx, saveXlsx } from 'office-meta-parser/xlsx';
 import { loadPptx, savePptx } from 'office-meta-parser/pptx';
 
-const { semantic: doc } = await loadDocx('input.docx');
-const { semantic: wb }  = await loadXlsx('input.xlsx');
+const { semantic: doc }  = await loadDocx('input.docx');
+const { semantic: wb }   = await loadXlsx('input.xlsx');
 const { semantic: pres } = await loadPptx('input.pptx');
 ```
 
-#### 保存到文件
+#### Save to File
 
 ```typescript
 await saveDocx(doc, 'output.docx');
@@ -110,12 +110,12 @@ await saveXlsx(wb, 'output.xlsx');
 await savePptx(pres, 'output.pptx');
 ```
 
-#### 写到流（HTTP 响应 / 文件流）
+#### Write to Stream (HTTP Response / File Stream)
 
 ```typescript
 import { writeDocxToStream } from 'office-meta-parser/docx';
 
-// Express 示例
+// Express example
 app.get('/export', async (req, res) => {
   res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
   res.setHeader('Content-Disposition', 'attachment; filename="report.docx"');
@@ -123,55 +123,55 @@ app.get('/export', async (req, res) => {
 });
 ```
 
-#### Buffer 与 JSON 转换
+#### Buffer & JSON Conversion
 
 ```typescript
 import { toBuffer, toJSON, toJSONString, saveToJSON } from '@turing-weique/office-meta-parser';
 
 const buf = toBuffer(arrayBuffer);     // → Node.js Buffer
-const json = toJSON(doc);              // → 可序列化对象（剥离 rawXmlParts）
-const str = toJSONString(doc, 2);      // → JSON 字符串
-await saveToJSON(doc, 'output.json');   // → 写 JSON 文件
+const json = toJSON(doc);              // → Serializable object (strips rawXmlParts)
+const str = toJSONString(doc, 2);      // → JSON string
+await saveToJSON(doc, 'output.json');   // → Write JSON file
 ```
 
 ---
 
-### 二、DOCX 操作
+### 2. DOCX Operations
 
-#### 创建文档并添加内容
+#### Create a Document and Add Content
 
 ```typescript
 import { createDocx, docx, saveDocx } from 'office-meta-parser/docx';
 
-const doc = createDocx({ title: '项目报告', creator: '张三' });
+const doc = createDocx({ title: 'Project Report', creator: 'Alice' });
 
-// 添加标题段落
+// Add a heading paragraph
 doc.body.blocks.push({
   type: 'paragraph',
-  runs: [{ text: '项目进展报告', bold: true, fontSize: 36, color: '1F4E79' }],
+  runs: [{ text: 'Project Progress Report', bold: true, fontSize: 36, color: '1F4E79' }],
 });
 
-// 添加正文段落
+// Add a body paragraph
 doc.body.blocks.push({
   type: 'paragraph',
-  runs: [{ text: '本季度完成了以下工作：' }],
+  runs: [{ text: 'The following work was completed this quarter:' }],
 });
 
-// 添加带混合格式的段落
+// Add a paragraph with mixed formatting
 doc.body.blocks.push({
   type: 'paragraph',
   runs: [
-    { text: '核心模块', bold: true },
-    { text: '已通过全部 ' },
+    { text: 'Core modules', bold: true },
+    { text: ' passed all ' },
     { text: '454', bold: true, color: 'FF0000' },
-    { text: ' 个测试用例。' },
+    { text: ' test cases.' },
   ],
 });
 
 await saveDocx(doc, 'report.docx');
 ```
 
-#### 添加表格
+#### Add a Table
 
 ```typescript
 doc.body.blocks.push({
@@ -179,15 +179,15 @@ doc.body.blocks.push({
   rows: [
     {
       cells: [
-        { blocks: [{ type: 'paragraph', runs: [{ text: '姓名', bold: true }] }] },
-        { blocks: [{ type: 'paragraph', runs: [{ text: '部门', bold: true }] }] },
-        { blocks: [{ type: 'paragraph', runs: [{ text: '绩效', bold: true }] }] },
+        { blocks: [{ type: 'paragraph', runs: [{ text: 'Name', bold: true }] }] },
+        { blocks: [{ type: 'paragraph', runs: [{ text: 'Department', bold: true }] }] },
+        { blocks: [{ type: 'paragraph', runs: [{ text: 'Rating', bold: true }] }] },
       ],
     },
     {
       cells: [
-        { blocks: [{ type: 'paragraph', runs: [{ text: '张三' }] }] },
-        { blocks: [{ type: 'paragraph', runs: [{ text: '研发部' }] }] },
+        { blocks: [{ type: 'paragraph', runs: [{ text: 'Alice' }] }] },
+        { blocks: [{ type: 'paragraph', runs: [{ text: 'Engineering' }] }] },
         { blocks: [{ type: 'paragraph', runs: [{ text: 'A' }] }] },
       ],
     },
@@ -195,23 +195,23 @@ doc.body.blocks.push({
 });
 ```
 
-#### 添加超链接
+#### Add a Hyperlink
 
 ```typescript
 doc.body.blocks.push({
   type: 'hyperlink',
   relationshipId: 'rId10',
   url: 'https://example.com',
-  runs: [{ text: '访问官网', underline: true, color: '0563C1' }],
+  runs: [{ text: 'Visit website', underline: true, color: '0563C1' }],
 });
 ```
 
-#### 读取文档内容
+#### Read Document Content
 
 ```typescript
 const { semantic } = await loadDocx('input.docx');
 
-// 遍历所有段落
+// Iterate over all blocks
 for (const block of semantic.body.blocks) {
   if (block.type === 'paragraph') {
     const text = block.runs.map(r => r.text).join('');
@@ -227,64 +227,64 @@ for (const block of semantic.body.blocks) {
 }
 ```
 
-#### 修改元数据
+#### Update Metadata
 
 ```typescript
 import { OMP } from '@turing-weique/office-meta-parser';
 
 const { semantic } = await OMP.docx.load('input.docx');
 
-OMP.docx.updateTitle(semantic, '新标题');
-OMP.docx.updateCreator(semantic, '新作者');
-OMP.docx.updateCategory(semantic, '合同');
-OMP.docx.updateLastModifiedBy(semantic, '系统');
+OMP.docx.updateTitle(semantic, 'New Title');
+OMP.docx.updateCreator(semantic, 'New Author');
+OMP.docx.updateCategory(semantic, 'Contract');
+OMP.docx.updateLastModifiedBy(semantic, 'System');
 
 await OMP.docx.save(semantic, 'output.docx');
 ```
 
-#### 批注操作
+#### Comment Operations
 
 ```typescript
 import { createDocx, addComment, listComments, getCommentText, markCommentDone, saveDocx } from 'office-meta-parser/docx';
 
-const doc = createDocx({ title: '审阅文档' });
-const run = { text: '待审核内容' };
+const doc = createDocx({ title: 'Review Document' });
+const run = { text: 'Content under review' };
 doc.body.blocks.push({ type: 'paragraph', runs: [run] });
 
-// 添加批注
-const comment = addComment(doc, run, '审核人', '请补充数据来源');
+// Add a comment anchored to a TextRun
+const comment = addComment(doc, run, 'Reviewer', 'Please add data sources');
 
-// 查看批注
+// List all comments
 const comments = listComments(doc);
 console.log(comments.length);  // 1
 
-// 获取批注纯文本
-console.log(getCommentText(doc, comment.id));  // → '请补充数据来源'
+// Get comment plain text
+console.log(getCommentText(doc, comment.id));  // → 'Please add data sources'
 
-// 标记已完成
+// Mark as done
 markCommentDone(doc, comment.id);
 
 await saveDocx(doc, 'reviewed.docx');
 ```
 
-#### 修订操作
+#### Revision (Track Changes) Operations
 
 ```typescript
 import { createDocx, markInsert, markDelete, hasPendingRevisions, acceptAllInserts, saveDocx } from 'office-meta-parser/docx';
 
-const doc = createDocx({ title: '修订文档' });
-const run1 = { text: '原始内容' };
-const run2 = { text: '新增内容' };
+const doc = createDocx({ title: 'Revised Document' });
+const run1 = { text: 'Original content' };
+const run2 = { text: 'New content' };
 doc.body.blocks.push({ type: 'paragraph', runs: [run1, run2] });
 
-// 标记修订
-markInsert(run2, '编辑');
-markDelete(run1, '编辑');
+// Mark revisions
+markInsert(run2, 'Editor');
+markDelete(run1, 'Editor');
 
-// 检查是否有未处理的修订
+// Check for pending revisions
 console.log(hasPendingRevisions(doc));  // true
 
-// 接受所有插入修订
+// Accept all insertions
 const count = acceptAllInserts(doc);
 
 await saveDocx(doc, 'revised.docx');
@@ -292,34 +292,34 @@ await saveDocx(doc, 'revised.docx');
 
 ---
 
-### 三、XLSX 操作
+### 3. XLSX Operations
 
-#### 创建工作簿
+#### Create a Workbook
 
 ```typescript
 import { createXlsx, saveXlsx } from 'office-meta-parser/xlsx';
 
-const wb = createXlsx({ title: '销售报表', creator: '王五', sheetName: '月度数据' });
+const wb = createXlsx({ title: 'Sales Report', creator: 'Bob', sheetName: 'Monthly Data' });
 
-// 添加表头
+// Add headers
 wb.sheets[0].cells.push([
-  { value: '产品名称', type: 'string' },
-  { value: '销量', type: 'string' },
-  { value: '单价', type: 'string' },
-  { value: '总额', type: 'string' },
+  { value: 'Product', type: 'string' },
+  { value: 'Quantity', type: 'string' },
+  { value: 'Unit Price', type: 'string' },
+  { value: 'Total', type: 'string' },
 ]);
 
-// 添加数据行
+// Add data rows
 wb.sheets[0].cells.push([
-  { value: '笔记本电脑', type: 'string' },
+  { value: 'Laptop', type: 'string' },
   { value: 120, type: 'number' },
-  { value: 5999, type: 'number' },
+  { value: 999, type: 'number' },
   { value: null, type: 'formula', formula: 'B2*C2' },
 ]);
 
-// 添加汇总行
+// Add a summary row
 wb.sheets[0].cells.push([
-  { value: '合计', type: 'string' },
+  { value: 'Total', type: 'string' },
   { value: null, type: 'formula', formula: 'SUM(B2:B3)' },
   { value: null, type: 'string' },
   { value: null, type: 'formula', formula: 'SUM(D2:D3)' },
@@ -328,7 +328,7 @@ wb.sheets[0].cells.push([
 await saveXlsx(wb, 'sales.xlsx');
 ```
 
-#### 读取单元格数据
+#### Read Cell Data
 
 ```typescript
 const { semantic } = await loadXlsx('input.xlsx');
@@ -338,7 +338,7 @@ for (const sheet of semantic.sheets) {
   for (const row of sheet.cells) {
     for (const cell of row) {
       if (cell.type === 'sharedString') {
-        // 共享字符串：通过索引查表
+        // Shared string: look up by index
         const text = semantic.sharedStrings[Number(cell.value)];
         console.log(text);
       } else {
@@ -349,10 +349,10 @@ for (const sheet of semantic.sheets) {
 }
 ```
 
-#### 添加多个工作表
+#### Add Multiple Sheets
 
 ```typescript
-const wb = createXlsx({ title: '年度报表' });
+const wb = createXlsx({ title: 'Annual Report' });
 
 wb.sheets.push(
   { name: 'Q1', cells: [], mergedCells: [], columnWidths: [], rowHeights: [], hyperlinks: [] },
@@ -362,72 +362,72 @@ wb.sheets.push(
 );
 ```
 
-#### 单元格批注
+#### Cell Comments
 
 ```typescript
 import { createXlsx, addComment, listComments, listSheetComments, getCommentText, saveXlsx } from 'office-meta-parser/xlsx';
 
-const wb = createXlsx({ title: '审核表' });
-// 确保 sheet 有单元格数据
-wb.sheets[0].cells = [[{ value: '数据', type: 'string' }]];
+const wb = createXlsx({ title: 'Review Sheet' });
+// Ensure the sheet has cell data
+wb.sheets[0].cells = [[{ value: 'Data', type: 'string' }]];
 
-// 添加批注
-addComment(wb, 0, 'A1', '审核人', '请核实数据来源');
+// Add a comment
+addComment(wb, 0, 'A1', 'Reviewer', 'Please verify the data source');
 
-// 查看批注
-console.log(listComments(wb));              // 跨所有 sheet
-console.log(listSheetComments(wb, 0));      // 指定 sheet
-console.log(getCommentText(wb, 0, 'A1'));   // → '请核实数据来源'
+// List comments
+console.log(listComments(wb));              // Across all sheets
+console.log(listSheetComments(wb, 0));      // Specific sheet
+console.log(getCommentText(wb, 0, 'A1'));   // → 'Please verify the data source'
 
 await saveXlsx(wb, 'reviewed.xlsx');
 ```
 
 ---
 
-### 四、PPTX 操作
+### 4. PPTX Operations
 
-#### 创建演示文稿
+#### Create a Presentation
 
 ```typescript
 import { createPptx, savePptx } from 'office-meta-parser/pptx';
 
-const pres = createPptx({ title: '产品介绍', creator: '赵六' });
+const pres = createPptx({ title: 'Product Intro', creator: 'Charlie' });
 
-// 第一页：标题页
+// Slide 1: Title slide
 pres.slides[0].elements.push(
   {
     type: 'text',
-    content: '产品介绍演示文稿',
+    content: 'Product Introduction',
     position: { x: 0, y: 0, width: 9144000, height: 2000000 },
-    paragraphs: [{ runs: [{ text: '产品介绍演示文稿' }] }],
+    paragraphs: [{ runs: [{ text: 'Product Introduction' }] }],
     placeholder: { type: 'title' },
   },
   {
     type: 'text',
-    content: '2024年度产品线全面介绍',
+    content: 'Full product line overview for 2024',
     position: { x: 0, y: 3000000, width: 9144000, height: 1000000 },
-    paragraphs: [{ runs: [{ text: '2024年度产品线全面介绍' }] }],
+    paragraphs: [{ runs: [{ text: 'Full product line overview for 2024' }] }],
     placeholder: { type: 'subtitle' },
   },
 );
 
-// 添加新幻灯片
+// Add a new slide
 pres.slides.push({
   elements: [
     {
       type: 'text',
-      content: '核心产品线',
+      content: 'Core Products',
       position: { x: 0, y: 0, width: 9144000, height: 1000000 },
-      paragraphs: [{ runs: [{ text: '核心产品线', bold: true }] }],
+      paragraphs: [{ runs: [{ text: 'Core Products', bold: true }] }],
     },
     {
       type: 'text',
-      content: '笔记本电脑系列\n显示器系列\n外设配件系列',
+      content: 'Laptop Series\nMonitor Series\nPeripheral Series',
       position: { x: 0, y: 1500000, width: 9144000, height: 4000000 },
       paragraphs: [
-        { runs: [{ text: '笔记本电脑系列' }] },
-        { runs: [{ text: '显示器系列' }] },
-        { runs: [{ text: '外设配件系列' }] },
+        { runs: [{ text: 'Laptop Series' }] },
+        { runs: [{ text: 'Monitor Series' }] },
+        { runs: [{ text: 'Peripheral Series' }] },
       ],
     },
   ],
@@ -436,7 +436,7 @@ pres.slides.push({
 await savePptx(pres, 'intro.pptx');
 ```
 
-#### 读取幻灯片内容
+#### Read Slide Content
 
 ```typescript
 const { semantic } = await loadPptx('input.pptx');
@@ -448,37 +448,37 @@ for (let i = 0; i < semantic.slides.length; i++) {
     if (el.type === 'text') {
       console.log(el.content);
     } else if (el.type === 'image') {
-      console.log(`[图片: ${el.relationshipId}]`);
+      console.log(`[Image: ${el.relationshipId}]`);
     } else if (el.type === 'table') {
-      console.log(`[表格: ${el.rows.length} 行]`);
+      console.log(`[Table: ${el.rows.length} rows]`);
     }
   }
 }
 ```
 
-#### 幻灯片批注
+#### Slide Comments
 
 ```typescript
 import { createPptx, addComment, listComments, listSlideComments, savePptx } from 'office-meta-parser/pptx';
 
-const pres = createPptx({ title: '审阅演示' });
+const pres = createPptx({ title: 'Review Presentation' });
 
-// 添加批注（可指定位置坐标）
-addComment(pres, 0, '审核人', '标题字号太大', 100, 50);
-addComment(pres, 0, '经理', '需要补充数据');
+// Add comments (with optional position coordinates)
+addComment(pres, 0, 'Reviewer', 'Title font is too large', 100, 50);
+addComment(pres, 0, 'Manager', 'Need more data');
 
-// 查看批注
-console.log(listComments(pres));            // 跨所有 slide
-console.log(listSlideComments(pres, 0));    // 指定 slide
+// List comments
+console.log(listComments(pres));            // Across all slides
+console.log(listSlideComments(pres, 0));    // Specific slide
 
 await savePptx(pres, 'reviewed.pptx');
 ```
 
 ---
 
-### 五、格式检测与校验
+### 5. Format Detection & Validation
 
-#### 自动检测文件格式
+#### Auto-Detect File Format
 
 ```typescript
 import { detectFormat } from '@turing-weique/office-meta-parser';
@@ -497,11 +497,11 @@ if (format === 'docx') {
   const { semantic } = await parsePptx(buffer);
   // ...
 } else {
-  console.error('不支持的文件格式');
+  console.error('Unsupported file format');
 }
 ```
 
-#### 上传文件校验
+#### Upload Validation
 
 ```typescript
 import { validate } from '@turing-weique/office-meta-parser';
@@ -512,19 +512,19 @@ app.post('/upload', async (req, res) => {
 
   if (!result.valid) {
     return res.status(400).json({
-      error: '文件校验失败',
+      error: 'Validation failed',
       format: result.format,
       issues: result.issues.filter(i => i.level === 'error'),
     });
   }
 
-  // 继续处理...
+  // Continue processing...
 });
 ```
 
-#### 序列化前自动校验
+#### Auto-Validation on Serialize
 
-`serializeDocx` / `serializeXlsx` / `serializePptx` 内部自动执行校验，遇到 error 级别问题会抛出 `ValidationError`：
+`serializeDocx` / `serializeXlsx` / `serializePptx` automatically run validation internally. Error-level issues throw a `ValidationError`:
 
 ```typescript
 import { ValidationError } from '@turing-weique/office-meta-parser';
@@ -533,7 +533,7 @@ try {
   await saveDocx(doc, 'output.docx');
 } catch (e) {
   if (e instanceof ValidationError) {
-    console.error('校验失败:');
+    console.error('Validation failed:');
     for (const issue of e.issues) {
       console.error(`  [${issue.level}] ${issue.path}: ${issue.message}`);
     }
@@ -543,9 +543,9 @@ try {
 
 ---
 
-### 六、批量处理
+### 6. Batch Processing
 
-#### 批量修改元数据
+#### Batch Metadata Update
 
 ```typescript
 import { loadDocx, saveDocx, docx } from 'office-meta-parser/docx';
@@ -555,14 +555,14 @@ const files = (await readdir('./contracts')).filter(f => f.endsWith('.docx'));
 
 for (const file of files) {
   const { semantic } = await loadDocx(`./contracts/${file}`);
-  docx.updateCategory(semantic, '合同');
-  docx.updateLastModifiedBy(semantic, '批量归档系统');
+  docx.updateCategory(semantic, 'Contract');
+  docx.updateLastModifiedBy(semantic, 'Batch Archive System');
   await saveDocx(semantic, `./output/${file}`);
-  console.log(`已处理: ${file}`);
+  console.log(`Processed: ${file}`);
 }
 ```
 
-#### 批量导出为 JSON
+#### Batch Export to JSON
 
 ```typescript
 import { loadXlsx, xlsx } from 'office-meta-parser/xlsx';
@@ -578,7 +578,7 @@ for (const file of files) {
 
 ---
 
-### 七、Express / Koa 集成
+### 7. Express / Koa Integration
 
 ```typescript
 import express from 'express';
@@ -588,22 +588,22 @@ import { createPptx, writePptxToStream } from 'office-meta-parser/pptx';
 
 const app = express();
 
-// 导出 DOCX
+// Export DOCX
 app.get('/api/export/docx', async (req, res) => {
-  const doc = createDocx({ title: '导出报告' });
-  doc.body.blocks.push({ type: 'paragraph', runs: [{ text: '动态生成的内容' }] });
+  const doc = createDocx({ title: 'Export Report' });
+  doc.body.blocks.push({ type: 'paragraph', runs: [{ text: 'Dynamically generated content' }] });
 
   res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
   res.setHeader('Content-Disposition', 'attachment; filename="report.docx"');
   await writeDocxToStream(doc, res);
 });
 
-// 导出 XLSX
+// Export XLSX
 app.get('/api/export/xlsx', async (req, res) => {
-  const wb = createXlsx({ title: '数据导出', sheetName: 'Sheet1' });
+  const wb = createXlsx({ title: 'Data Export', sheetName: 'Sheet1' });
   wb.sheets[0].cells.push([
     { value: 'ID', type: 'string' },
-    { value: '名称', type: 'string' },
+    { value: 'Name', type: 'string' },
   ]);
 
   res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -611,9 +611,9 @@ app.get('/api/export/xlsx', async (req, res) => {
   await writeXlsxToStream(wb, res);
 });
 
-// 导出 PPTX
+// Export PPTX
 app.get('/api/export/pptx', async (req, res) => {
-  const pres = createPptx({ title: '自动生成' });
+  const pres = createPptx({ title: 'Auto-Generated' });
 
   res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.presentationml.presentation');
   res.setHeader('Content-Disposition', 'attachment; filename="slides.pptx"');
@@ -623,49 +623,49 @@ app.get('/api/export/pptx', async (req, res) => {
 
 ---
 
-## API 参考
+## API Reference
 
-### 导入路径
+### Import Paths
 
-| 路径 | 内容 |
-|------|------|
-| `@turing-weique/office-meta-parser` | 核心层 + `OMP` 统一命名空间 |
-| `@turing-weique/office-meta-parser/core` | 基础设施（XML / ZIP / 元数据） |
-| `@turing-weique/office-meta-parser/docx` | Word 文档 |
-| `@turing-weique/office-meta-parser/xlsx` | Excel 表格 |
-| `@turing-weique/office-meta-parser/pptx` | PowerPoint 演示文稿 |
+| Path | Contents |
+|------|----------|
+| `@turing-weique/office-meta-parser` | Core + `OMP` unified namespace |
+| `@turing-weique/office-meta-parser/core` | Infrastructure (XML / ZIP / metadata) |
+| `@turing-weique/office-meta-parser/docx` | Word documents |
+| `@turing-weique/office-meta-parser/xlsx` | Excel spreadsheets |
+| `@turing-weique/office-meta-parser/pptx` | PowerPoint presentations |
 
-### OMP 统一命名空间
+### OMP Unified Namespace
 
-所有 API 均可通过 `OMP` 对象统一调用：
+All APIs are accessible through the `OMP` object:
 
 ```typescript
 import { OMP } from '@turing-weique/office-meta-parser';
 
-// 通用
-OMP.detectFormat(buffer)       // 检测格式
-OMP.validate(buffer)           // 校验
-OMP.toBuffer(arrayBuffer)      // 转 Buffer
-OMP.toJSON(semantic)           // 转 JSON
-OMP.loadFromFile(path)         // 读文件
-OMP.saveToFile(buffer, path)   // 写文件
+// Common
+OMP.detectFormat(buffer)       // Detect format
+OMP.validate(buffer)           // Validate
+OMP.toBuffer(arrayBuffer)      // Convert to Buffer
+OMP.toJSON(semantic)           // Convert to JSON
+OMP.loadFromFile(path)         // Read file
+OMP.saveToFile(buffer, path)   // Write file
 
-// 格式专属
+// Format-specific
 OMP.docx.create / .parse / .serialize / .load / .save / .validate
 OMP.xlsx.create / .parse / .serialize / .load / .save / .validate
 OMP.pptx.create / .parse / .serialize / .load / .save / .validate
 
-// 元数据
+// Metadata
 OMP.docx.updateTitle / .updateCreator / .updateSubject / ...
 OMP.xlsx.updateTitle / .updateCreator / ...
 OMP.pptx.updateTitle / .updateCreator / ...
 
-// 批注
+// Comments
 OMP.docx.addComment / .removeComment / .listComments / ...
 OMP.xlsx.addComment / .removeComment / .listComments / ...
 OMP.pptx.addComment / .removeComment / .listComments / ...
 
-// 修订（仅 DOCX）
+// Revisions (DOCX only)
 OMP.docx.markInsert / .markDelete / .acceptAllInserts / ...
 
 // JSON
@@ -678,49 +678,49 @@ OMP.pptx.toJSON / .toJSONString / .saveJSON
 
 ### DOCX (`@turing-weique/office-meta-parser/docx`)
 
-#### 解析 / 序列化
+#### Parse / Serialize
 
-| 函数 | 签名 | 说明 |
-|------|------|------|
-| `parseDocx` | `(buffer: ArrayBuffer) → Promise<{raw, semantic}>` | 解码 |
-| `serializeDocx` | `(doc: DocxDocument) → Promise<ArrayBuffer>` | 编码（含校验） |
-| `loadDocx` | `(path: string) → Promise<{raw, semantic}>` | 从文件加载 |
-| `saveDocx` | `(doc: DocxDocument, path: string) → Promise<void>` | 保存到文件 |
-| `writeDocxToStream` | `(doc, stream: Writable) → Promise<void>` | 写到流 |
-| `createDocx` | `(options?) → DocxDocument` | 创建空文档 |
-| `validateDocx` | `(doc: DocxDocument) → ValidationIssue[]` | 校验语义模型 |
+| Function | Signature | Description |
+|----------|-----------|-------------|
+| `parseDocx` | `(buffer: ArrayBuffer) → Promise<{raw, semantic}>` | Decode |
+| `serializeDocx` | `(doc: DocxDocument) → Promise<ArrayBuffer>` | Encode (with validation) |
+| `loadDocx` | `(path: string) → Promise<{raw, semantic}>` | Load from file |
+| `saveDocx` | `(doc: DocxDocument, path: string) → Promise<void>` | Save to file |
+| `writeDocxToStream` | `(doc, stream: Writable) → Promise<void>` | Write to stream |
+| `createDocx` | `(options?) → DocxDocument` | Create empty document |
+| `validateDocx` | `(doc: DocxDocument) → ValidationIssue[]` | Validate semantic model |
 
-#### 元数据更新
+#### Metadata Update
 
 ```typescript
 import { docx, updateDocxTitle } from 'office-meta-parser/docx';
 import { OMP } from '@turing-weique/office-meta-parser';
 
-// 方式 1: OMP 统一入口
-OMP.docx.updateTitle(doc, '新标题');
-OMP.docx.updateCreator(doc, '张三');
+// Method 1: OMP unified namespace
+OMP.docx.updateTitle(doc, 'New Title');
+OMP.docx.updateCreator(doc, 'Alice');
 
-// 方式 2: 命名空间
-docx.updateTitle(doc, '新标题');
+// Method 2: Namespace
+docx.updateTitle(doc, 'New Title');
 
-// 方式 3: 独立函数
-updateDocxTitle(doc, '新标题');
+// Method 3: Standalone function
+updateDocxTitle(doc, 'New Title');
 
-// 7 个字段均可操作：updateTitle / updateSubject / updateCreator /
+// 7 fields available: updateTitle / updateSubject / updateCreator /
 // updateDescription / updateKeywords / updateCategory / updateLastModifiedBy
 ```
 
-#### JSON 导出
+#### JSON Export
 
 ```typescript
 import { toDocxJSON, docx } from 'office-meta-parser/docx';
 import { OMP } from '@turing-weique/office-meta-parser';
 
-const json = toDocxJSON(doc);              // → DocxDocument 对象
-const str  = docx.toJSONString(doc, 2);    // → JSON 字符串
-await docx.saveJSON(doc, 'output.json');   // → 写文件
+const json = toDocxJSON(doc);              // → DocxDocument object
+const str  = docx.toJSONString(doc, 2);    // → JSON string
+await docx.saveJSON(doc, 'output.json');   // → Write file
 
-// OMP 方式
+// OMP way
 OMP.docx.toJSON(doc);
 OMP.docx.saveJSON(doc, 'output.json');
 docx.toJSON(doc);
@@ -728,31 +728,31 @@ docx.toJSONString(doc);
 docx.saveJSON(doc, 'output.json');
 ```
 
-#### 批注操作
+#### Comment Operations
 
 ```typescript
 import { addComment, removeComment, listComments, getCommentText, markCommentDone, markCommentUndone } from 'office-meta-parser/docx';
 
-// 添加批注 — 将批注锚定到指定 TextRun
-const comment = addComment(doc, run, '张三', '这里需要修改');
-// run.commentId 已自动设置
+// Add a comment anchored to a TextRun
+const comment = addComment(doc, run, 'Alice', 'This needs revision');
+// run.commentId is set automatically
 
-// 列出所有批注
+// List all comments
 const comments = listComments(doc);
 // [{ comment, blockIndex, runIndices }, ...]
 
-// 获取批注纯文本
-const text = getCommentText(doc, comment.id);  // → '这里需要修改'
+// Get comment plain text
+const text = getCommentText(doc, comment.id);  // → 'This needs revision'
 
-// 标记完成 / 未完成
+// Mark done / undone
 markCommentDone(doc, comment.id);
 markCommentUndone(doc, comment.id);
 
-// 移除批注（同时清除 run 上的 commentId 标记）
+// Remove comment (also clears commentId on the run)
 removeComment(doc, comment.id);
 ```
 
-#### 修订操作
+#### Revision (Track Changes) Operations
 
 ```typescript
 import {
@@ -761,24 +761,24 @@ import {
   acceptAllInserts, acceptAllDeletes, rejectAllInserts, rejectAllDeletes,
 } from 'office-meta-parser/docx';
 
-// 标记插入 / 删除修订
-markInsert(run, '张三', '2024-01-01T00:00:00Z');
-markDelete(run, '张三');
+// Mark insert / delete revisions
+markInsert(run, 'Alice', '2024-01-01T00:00:00Z');
+markDelete(run, 'Alice');
 
-// 添加格式变更记录
-addFormatChange(doc, '李四');
+// Add format change record
+addFormatChange(doc, 'Bob');
 
-// 查询修订
+// Query revisions
 hasPendingRevisions(doc);          // → boolean
 const revisions = listRevisions(doc);  // [{ revision, blockIndex, runIndex, run }, ...]
 
-// 接受 / 拒绝
-acceptAllInserts(doc);   // → 处理数量（移除标记，保留文本）
-acceptAllDeletes(doc);   // → 处理数量（移除被标记的 run）
-rejectAllInserts(doc);   // → 处理数量（移除被标记的 run）
-rejectAllDeletes(doc);   // → 处理数量（移除标记，保留文本）
+// Accept / Reject
+acceptAllInserts(doc);   // → count (removes markup, keeps text)
+acceptAllDeletes(doc);   // → count (removes marked runs)
+rejectAllInserts(doc);   // → count (removes marked runs)
+rejectAllDeletes(doc);   // → count (removes markup, keeps text)
 
-// 清除单个 run 的修订标记
+// Clear revision markup on a single run
 clearRevision(run);
 ```
 
@@ -786,33 +786,33 @@ clearRevision(run);
 
 ### XLSX (`@turing-weique/office-meta-parser/xlsx`)
 
-#### 解析 / 序列化
+#### Parse / Serialize
 
-| 函数 | 签名 | 说明 |
-|------|------|------|
-| `parseXlsx` | `(buffer: ArrayBuffer) → Promise<{raw, semantic}>` | 解码 |
-| `serializeXlsx` | `(wb: XlsxWorkbook) → Promise<ArrayBuffer>` | 编码（含校验） |
-| `loadXlsx` | `(path: string) → Promise<{raw, semantic}>` | 从文件加载 |
-| `saveXlsx` | `(wb: XlsxWorkbook, path: string) → Promise<void>` | 保存到文件 |
-| `writeXlsxToStream` | `(wb, stream: Writable) → Promise<void>` | 写到流 |
-| `createXlsx` | `(options?) → XlsxWorkbook` | 创建空工作簿 |
-| `validateXlsx` | `(wb: XlsxWorkbook) → ValidationIssue[]` | 校验 |
+| Function | Signature | Description |
+|----------|-----------|-------------|
+| `parseXlsx` | `(buffer: ArrayBuffer) → Promise<{raw, semantic}>` | Decode |
+| `serializeXlsx` | `(wb: XlsxWorkbook) → Promise<ArrayBuffer>` | Encode (with validation) |
+| `loadXlsx` | `(path: string) → Promise<{raw, semantic}>` | Load from file |
+| `saveXlsx` | `(wb: XlsxWorkbook, path: string) → Promise<void>` | Save to file |
+| `writeXlsxToStream` | `(wb, stream: Writable) → Promise<void>` | Write to stream |
+| `createXlsx` | `(options?) → XlsxWorkbook` | Create empty workbook |
+| `validateXlsx` | `(wb: XlsxWorkbook) → ValidationIssue[]` | Validate |
 
-#### 元数据更新
+#### Metadata Update
 
 ```typescript
 import { xlsx } from 'office-meta-parser/xlsx';
 import { OMP } from '@turing-weique/office-meta-parser';
 
-// OMP 方式
-OMP.xlsx.updateTitle(wb, '销售报表');
-OMP.xlsx.updateCreator(wb, '王五');
+// OMP way
+OMP.xlsx.updateTitle(wb, 'Sales Report');
+OMP.xlsx.updateCreator(wb, 'Bob');
 
-// 命名空间方式
-xlsx.updateTitle(wb, '销售报表');
+// Namespace way
+xlsx.updateTitle(wb, 'Sales Report');
 ```
 
-#### JSON 导出
+#### JSON Export
 
 ```typescript
 import { xlsx } from 'office-meta-parser/xlsx';
@@ -821,28 +821,28 @@ import { OMP } from '@turing-weique/office-meta-parser';
 xlsx.toJSON(wb);
 xlsx.saveJSON(wb, 'workbook.json');
 
-// OMP 方式
+// OMP way
 OMP.xlsx.toJSON(wb);
 ```
 
-#### 批注操作
+#### Comment Operations
 
 ```typescript
 import { addComment, removeComment, listComments, listSheetComments, getCommentText, updateComment } from 'office-meta-parser/xlsx';
 
-// 添加批注 — 按单元格引用定位
-addComment(wb, 0, 'A1', '张三', '需要修改');
-addComment(wb, 0, 'B2', '李四', '数据有误', [{ text: '富文本', bold: true }]);
+// Add a comment by cell reference
+addComment(wb, 0, 'A1', 'Alice', 'Needs revision');
+addComment(wb, 0, 'B2', 'Bob', 'Incorrect data', [{ text: 'Rich text', bold: true }]);
 
-// 列出批注
-const all = listComments(wb);               // 跨所有 sheet
-const sheet0 = listSheetComments(wb, 0);    // 指定 sheet
+// List comments
+const all = listComments(wb);               // Across all sheets
+const sheet0 = listSheetComments(wb, 0);    // Specific sheet
 
-// 获取 / 更新
-getCommentText(wb, 0, 'A1');                // → '需要修改'
-updateComment(wb, 0, 'A1', '已修改');
+// Get / Update
+getCommentText(wb, 0, 'A1');                // → 'Needs revision'
+updateComment(wb, 0, 'A1', 'Revised');
 
-// 移除
+// Remove
 removeComment(wb, 0, 'B2');
 ```
 
@@ -850,33 +850,33 @@ removeComment(wb, 0, 'B2');
 
 ### PPTX (`@turing-weique/office-meta-parser/pptx`)
 
-#### 解析 / 序列化
+#### Parse / Serialize
 
-| 函数 | 签名 | 说明 |
-|------|------|------|
-| `parsePptx` | `(buffer: ArrayBuffer) → Promise<{raw, semantic}>` | 解码 |
-| `serializePptx` | `(pres: PptxPresentation) → Promise<ArrayBuffer>` | 编码（含校验） |
-| `loadPptx` | `(path: string) → Promise<{raw, semantic}>` | 从文件加载 |
-| `savePptx` | `(pres: PptxPresentation, path: string) → Promise<void>` | 保存到文件 |
-| `writePptxToStream` | `(pres, stream: Writable) → Promise<void>` | 写到流 |
-| `createPptx` | `(options?) → PptxPresentation` | 创建空演示文稿 |
-| `validatePptx` | `(pres: PptxPresentation) → ValidationIssue[]` | 校验 |
+| Function | Signature | Description |
+|----------|-----------|-------------|
+| `parsePptx` | `(buffer: ArrayBuffer) → Promise<{raw, semantic}>` | Decode |
+| `serializePptx` | `(pres: PptxPresentation) → Promise<ArrayBuffer>` | Encode (with validation) |
+| `loadPptx` | `(path: string) → Promise<{raw, semantic}>` | Load from file |
+| `savePptx` | `(pres: PptxPresentation, path: string) → Promise<void>` | Save to file |
+| `writePptxToStream` | `(pres, stream: Writable) → Promise<void>` | Write to stream |
+| `createPptx` | `(options?) → PptxPresentation` | Create empty presentation |
+| `validatePptx` | `(pres: PptxPresentation) → ValidationIssue[]` | Validate |
 
-#### 元数据更新
+#### Metadata Update
 
 ```typescript
 import { pptx } from 'office-meta-parser/pptx';
 import { OMP } from '@turing-weique/office-meta-parser';
 
-// OMP 方式
-OMP.pptx.updateTitle(pres, '产品介绍');
-OMP.pptx.updateCreator(pres, '赵六');
+// OMP way
+OMP.pptx.updateTitle(pres, 'Product Intro');
+OMP.pptx.updateCreator(pres, 'Charlie');
 
-// 命名空间方式
-pptx.updateTitle(pres, '产品介绍');
+// Namespace way
+pptx.updateTitle(pres, 'Product Intro');
 ```
 
-#### JSON 导出
+#### JSON Export
 
 ```typescript
 import { pptx } from 'office-meta-parser/pptx';
@@ -885,107 +885,107 @@ import { OMP } from '@turing-weique/office-meta-parser';
 pptx.toJSON(pres);
 pptx.saveJSON(pres, 'presentation.json');
 
-// OMP 方式
+// OMP way
 OMP.pptx.toJSON(pres);
 ```
 
-#### 批注操作
+#### Comment Operations
 
 ```typescript
 import { addComment, removeComment, listComments, listSlideComments, getCommentText } from 'office-meta-parser/pptx';
 
-// 添加批注 — 可指定位置坐标
-addComment(pres, 0, '审核人', '标题需要修改', 100, 200);
+// Add a comment with optional position coordinates
+addComment(pres, 0, 'Reviewer', 'Title needs revision', 100, 200);
 
-// 列出批注
-const all = listComments(pres);               // 跨所有 slide
-const slide0 = listSlideComments(pres, 0);    // 指定 slide
+// List comments
+const all = listComments(pres);               // Across all slides
+const slide0 = listSlideComments(pres, 0);    // Specific slide
 
-// 获取文本
-getCommentText(pres, 0, '1');                 // → '标题需要修改'
+// Get text
+getCommentText(pres, 0, '1');                 // → 'Title needs revision'
 
-// 移除
+// Remove
 removeComment(pres, 0, '1');
 ```
 
 ---
 
-### 核心模块 (`@turing-weique/office-meta-parser/core`)
+### Core Module (`@turing-weique/office-meta-parser/core`)
 
-#### 文件 I/O
+#### File I/O
 
-| 函数 | 签名 | 说明 |
-|------|------|------|
-| `loadFromFile` | `(path: string) → Promise<ArrayBuffer>` | 读文件 |
-| `saveToFile` | `(buffer: ArrayBuffer, path: string) → Promise<void>` | 写文件 |
-| `writeToStream` | `(buffer, stream: Writable) → Promise<void>` | 写到流 |
-| `toBuffer` | `(buffer: ArrayBuffer) → Buffer` | 转 Node.js Buffer |
-| `toJSON` | `<T>(semantic: T) → T` | 语义模型 → JSON 对象 |
-| `toJSONString` | `<T>(semantic: T, space?) → string` | 语义模型 → JSON 字符串 |
-| `saveToJSON` | `<T>(semantic: T, path: string, space?) → Promise<void>` | 语义模型 → JSON 文件 |
+| Function | Signature | Description |
+|----------|-----------|-------------|
+| `loadFromFile` | `(path: string) → Promise<ArrayBuffer>` | Read file |
+| `saveToFile` | `(buffer: ArrayBuffer, path: string) → Promise<void>` | Write file |
+| `writeToStream` | `(buffer, stream: Writable) → Promise<void>` | Write to stream |
+| `toBuffer` | `(buffer: ArrayBuffer) → Buffer` | Convert to Node.js Buffer |
+| `toJSON` | `<T>(semantic: T) → T` | Semantic model → JSON object |
+| `toJSONString` | `<T>(semantic: T, space?) → string` | Semantic model → JSON string |
+| `saveToJSON` | `<T>(semantic: T, path: string, space?) → Promise<void>` | Semantic model → JSON file |
 
-#### 格式检测与校验
+#### Format Detection & Validation
 
 ```typescript
 import { detectFormat, validate } from '@turing-weique/office-meta-parser';
 
-// 检测格式
+// Detect format
 const format = await detectFormat(buffer); // 'docx' | 'xlsx' | 'pptx' | null
 
-// 统一校验（自动检测格式 + 解析 + 校验）
+// Unified validation (auto-detect + parse + validate)
 const result = await validate(buffer);
 // { format: 'docx', issues: [...], valid: true }
 ```
 
-#### 元数据更新（泛型）
+#### Metadata Update (Generic)
 
 ```typescript
 import { updateTitle, updateCreator, createMetaOps } from '@turing-weique/office-meta-parser';
 
-// 直接使用泛型函数 — 适用于任意持有 meta 的对象
-updateTitle(doc, '新标题');
-updateCreator(wb, '张三');
+// Use generic functions directly — works on any object with meta
+updateTitle(doc, 'New Title');
+updateCreator(wb, 'Alice');
 
-// createMetaOps 工厂 — 为自定义类型生成全套操作
+// createMetaOps factory — generate full operations for custom types
 import type { DocumentMeta } from '@turing-weique/office-meta-parser';
 
 interface MyDoc { meta: DocumentMeta; /* ... */ }
 const myOps = createMetaOps<MyDoc>();
 
-myOps.updateTitle(myDoc, '新标题');
-myOps.updateCreator(myDoc, '张三');
+myOps.updateTitle(myDoc, 'New Title');
+myOps.updateCreator(myDoc, 'Alice');
 myOps.toJSON(myDoc);
 myOps.saveJSON(myDoc, 'output.json');
-// 共 10 个操作：7 个元数据 + toJSON / toJSONString / saveJSON
+// 10 operations total: 7 metadata + toJSON / toJSONString / saveJSON
 ```
 
 #### XML / ZIP
 
-| 函数 | 说明 |
-|------|------|
-| `parseXml(xml)` | XML 字符串 → ParsedNode 树 |
-| `serializeXml(node)` | ParsedNode 树 → XML 字符串 |
-| `parseRels(xml)` | 解析 .rels 关系文件 |
-| `serializeRels(rels)` | 序列化 .rels |
-| `parseContentTypes(xml)` | 解析 [Content_Types].xml |
-| `serializeContentTypes(cts)` | 序列化 Content_Types |
-| `unzip(buffer)` | 解压 ZIP → ZipEntry[] |
-| `zip(entries)` | 打包为 ZIP |
+| Function | Description |
+|----------|-------------|
+| `parseXml(xml)` | XML string → ParsedNode tree |
+| `serializeXml(node)` | ParsedNode tree → XML string |
+| `parseRels(xml)` | Parse .rels relationship file |
+| `serializeRels(rels)` | Serialize .rels |
+| `parseContentTypes(xml)` | Parse [Content_Types].xml |
+| `serializeContentTypes(cts)` | Serialize Content_Types |
+| `unzip(buffer)` | Decompress ZIP → ZipEntry[] |
+| `zip(entries)` | Compress to ZIP |
 
-#### 元数据解析 / 序列化
+#### Metadata Parse / Serialize
 
-| 函数 | 说明 |
-|------|------|
-| `parseMeta(node)` | 解析 core.xml 元数据 |
-| `serializeMeta(meta)` | 序列化 core.xml |
-| `parseAppMeta(xml)` | 解析 app.xml |
-| `serializeAppMeta(meta)` | 序列化 app.xml |
-| `parseCustomProperties(xml)` | 解析 custom.xml |
-| `serializeCustomProperties(props)` | 序列化 custom.xml |
+| Function | Description |
+|----------|-------------|
+| `parseMeta(node)` | Parse core.xml metadata |
+| `serializeMeta(meta)` | Serialize core.xml |
+| `parseAppMeta(xml)` | Parse app.xml |
+| `serializeAppMeta(meta)` | Serialize app.xml |
+| `parseCustomProperties(xml)` | Parse custom.xml |
+| `serializeCustomProperties(props)` | Serialize custom.xml |
 
 ---
 
-### 错误处理
+### Error Handling
 
 ```typescript
 import { ValidationError, FormatError } from '@turing-weique/office-meta-parser';
@@ -994,63 +994,63 @@ try {
   await serializeDocx(doc);
 } catch (e) {
   if (e instanceof ValidationError) {
-    // 校验失败：e.issues 包含具体的错误列表
+    // Validation failed: e.issues contains the error list
     for (const issue of e.issues) {
       console.error(`[${issue.level}] ${issue.path}: ${issue.message}`);
     }
   }
 }
 
-// FormatError 用于格式不支持的情况
-const err = new FormatError('不支持的格式', 'pdf');
+// FormatError for unsupported formats
+const err = new FormatError('Unsupported format', 'pdf');
 ```
 
 ---
 
-### 校验规则
+### Validation Rules
 
-每个格式的校验器包含**必须项**（error，阻止序列化）和**可选项**（warning，打印到 stderr）。
+Each format's validator includes **required** (error — blocks serialization) and **optional** (warning — prints to stderr) rules.
 
 #### DOCX
 
-| 级别 | 规则 |
-|------|------|
-| error | body.blocks 不能为空 |
-| error | commentId 引用的 comment 必须存在 |
-| error | bookmarkStart/bookmarkEnd 必须成对 |
-| error | hyperlink/image 必须有 relationshipId |
-| error | numbering.numId 引用必须存在 |
-| error | header/footer id 不能重复 |
-| error | table.rows 不能为空 |
-| warning | comment 内容不能为空 |
-| warning | 定义了 comments 但 body 中无引用 |
+| Level | Rule |
+|-------|------|
+| error | body.blocks must not be empty |
+| error | commentId must reference an existing comment |
+| error | bookmarkStart/bookmarkEnd must be paired |
+| error | hyperlink/image must have a relationshipId |
+| error | numbering.numId reference must exist |
+| error | header/footer id must not be duplicated |
+| error | table.rows must not be empty |
+| warning | comment content must not be empty |
+| warning | comments defined but no reference in body |
 
 #### XLSX
 
-| 级别 | 规则 |
-|------|------|
-| error | sheets 不能为空 |
-| error | sheet.name 不能为空 |
-| error | sharedString 引用不能越界 |
-| error | mergedCells 范围合法 |
-| error | hyperlinks 必须有 ref 和 url |
-| error | table 必须有 ref 和 displayName |
+| Level | Rule |
+|-------|------|
+| error | sheets must not be empty |
+| error | sheet.name must not be empty |
+| error | sharedString reference must be in bounds |
+| error | mergedCells range must be valid |
+| error | hyperlinks must have ref and url |
+| error | table must have ref and displayName |
 
 #### PPTX
 
-| 级别 | 规则 |
-|------|------|
-| error | theme 不能缺失 |
-| error | masters/layouts 不能为空 |
-| error | slides 不能为空 |
-| error | image 必须有 relationshipId |
-| error | table.rows 不能为空 |
-| warning | layout 引用必须存在 |
-| warning | slideSize 缺失 |
+| Level | Rule |
+|-------|------|
+| error | theme must not be missing |
+| error | masters/layouts must not be empty |
+| error | slides must not be empty |
+| error | image must have a relationshipId |
+| error | table.rows must not be empty |
+| warning | layout reference must exist |
+| warning | slideSize missing |
 
 ---
 
-## 数据模型
+## Data Models
 
 ### DocumentMeta
 
@@ -1102,18 +1102,18 @@ interface TextRun {
   strike?: boolean;
   superscript?: boolean;
   subscript?: boolean;
-  fontSize?: number;       // 半磅值（如 56 = 28pt）
-  color?: string;          // RGB 十六进制
+  fontSize?: number;       // Half-point value (e.g. 56 = 28pt)
+  color?: string;          // RGB hex
   fontFamily?: string;
   highlight?: string;
-  commentId?: string;      // 关联批注
+  commentId?: string;      // Associated comment
 }
 
 interface Comment {
   id: string;
   author: string;
   date: string;
-  content: Paragraph[];    // 批注内容（结构化段落）
+  content: Paragraph[];    // Comment body (structured paragraphs)
 }
 ```
 
@@ -1149,7 +1149,7 @@ interface Cell {
 }
 
 interface SheetComment {
-  ref: string;           // 单元格引用，如 'A1'
+  ref: string;           // Cell reference, e.g. 'A1'
   authorId: number;
   text: string;
   richText?: RichTextRun[];
@@ -1192,21 +1192,21 @@ interface SlideComment {
 
 ---
 
-## 测试
+## Testing
 
 ```bash
-npm test              # 运行全部测试（89 文件 / 507 用例）
-npm run test:codec    # 编解码集成测试
-npm run typecheck     # 类型检查
+npm test              # Run all tests (89 files / 507 cases)
+npm run test:codec    # Codec integration tests
+npm run typecheck     # Type check
 ```
 
-## 依赖
+## Dependencies
 
-| 包 | 用途 |
-|----|------|
-| `jszip` | ZIP 压缩/解压 |
-| `fast-xml-parser` | XML 解析与序列化 |
+| Package | Purpose |
+|---------|---------|
+| `jszip` | ZIP compression/decompression |
+| `fast-xml-parser` | XML parsing and serialization |
 
-## 许可
+## License
 
 [Apache License 2.0](./LICENSE)
