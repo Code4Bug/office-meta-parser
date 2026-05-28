@@ -1,5 +1,9 @@
 # office-meta-parser
 
+[![npm version](https://img.shields.io/npm/v/@turing-weique/office-meta-parser)](https://www.npmjs.com/package/@turing-weique/office-meta-parser)
+[![npm downloads](https://img.shields.io/npm/dm/@turing-weique/office-meta-parser)](https://www.npmjs.com/package/@turing-weique/office-meta-parser)
+[![license](https://img.shields.io/npm/l/@turing-weique/office-meta-parser)](https://github.com/anthropics/office-meta-parser/blob/main/LICENSE)
+
 纯 TypeScript 实现的 Office Open XML (OOXML) 解析与序列化库，支持 DOCX、XLSX、PPTX 格式。
 
 零原生依赖，可在 Node.js 和浏览器环境中运行。
@@ -7,7 +11,7 @@
 ## 安装
 
 ```bash
-npm install office-meta-parser
+npm install @turing-weique/office-meta-parser
 ```
 
 ## 快速上手
@@ -15,7 +19,7 @@ npm install office-meta-parser
 ### 统一入口 OMP
 
 ```typescript
-import { OMP } from 'office-meta-parser';
+import { OMP } from '@turing-weique/office-meta-parser';
 
 // 通用 API
 const format = await OMP.detectFormat(buffer);
@@ -122,7 +126,7 @@ app.get('/export', async (req, res) => {
 #### Buffer 与 JSON 转换
 
 ```typescript
-import { toBuffer, toJSON, toJSONString, saveToJSON } from 'office-meta-parser';
+import { toBuffer, toJSON, toJSONString, saveToJSON } from '@turing-weique/office-meta-parser';
 
 const buf = toBuffer(arrayBuffer);     // → Node.js Buffer
 const json = toJSON(doc);              // → 可序列化对象（剥离 rawXmlParts）
@@ -226,7 +230,7 @@ for (const block of semantic.body.blocks) {
 #### 修改元数据
 
 ```typescript
-import { OMP } from 'office-meta-parser';
+import { OMP } from '@turing-weique/office-meta-parser';
 
 const { semantic } = await OMP.docx.load('input.docx');
 
@@ -477,7 +481,7 @@ await savePptx(pres, 'reviewed.pptx');
 #### 自动检测文件格式
 
 ```typescript
-import { detectFormat } from 'office-meta-parser';
+import { detectFormat } from '@turing-weique/office-meta-parser';
 import { loadFromFile } from 'office-meta-parser/core';
 
 const buffer = await loadFromFile('unknown.file');
@@ -500,7 +504,7 @@ if (format === 'docx') {
 #### 上传文件校验
 
 ```typescript
-import { validate } from 'office-meta-parser';
+import { validate } from '@turing-weique/office-meta-parser';
 
 app.post('/upload', async (req, res) => {
   const buffer = req.file.buffer;
@@ -523,7 +527,7 @@ app.post('/upload', async (req, res) => {
 `serializeDocx` / `serializeXlsx` / `serializePptx` 内部自动执行校验，遇到 error 级别问题会抛出 `ValidationError`：
 
 ```typescript
-import { ValidationError } from 'office-meta-parser';
+import { ValidationError } from '@turing-weique/office-meta-parser';
 
 try {
   await saveDocx(doc, 'output.docx');
@@ -625,18 +629,18 @@ app.get('/api/export/pptx', async (req, res) => {
 
 | 路径 | 内容 |
 |------|------|
-| `office-meta-parser` | 核心层 + `OMP` 统一命名空间 |
-| `office-meta-parser/core` | 基础设施（XML / ZIP / 元数据） |
-| `office-meta-parser/docx` | Word 文档 |
-| `office-meta-parser/xlsx` | Excel 表格 |
-| `office-meta-parser/pptx` | PowerPoint 演示文稿 |
+| `@turing-weique/office-meta-parser` | 核心层 + `OMP` 统一命名空间 |
+| `@turing-weique/office-meta-parser/core` | 基础设施（XML / ZIP / 元数据） |
+| `@turing-weique/office-meta-parser/docx` | Word 文档 |
+| `@turing-weique/office-meta-parser/xlsx` | Excel 表格 |
+| `@turing-weique/office-meta-parser/pptx` | PowerPoint 演示文稿 |
 
 ### OMP 统一命名空间
 
 所有 API 均可通过 `OMP` 对象统一调用：
 
 ```typescript
-import { OMP } from 'office-meta-parser';
+import { OMP } from '@turing-weique/office-meta-parser';
 
 // 通用
 OMP.detectFormat(buffer)       // 检测格式
@@ -672,7 +676,7 @@ OMP.pptx.toJSON / .toJSONString / .saveJSON
 
 ---
 
-### DOCX (`office-meta-parser/docx`)
+### DOCX (`@turing-weique/office-meta-parser/docx`)
 
 #### 解析 / 序列化
 
@@ -690,7 +694,7 @@ OMP.pptx.toJSON / .toJSONString / .saveJSON
 
 ```typescript
 import { docx, updateDocxTitle } from 'office-meta-parser/docx';
-import { OMP } from 'office-meta-parser';
+import { OMP } from '@turing-weique/office-meta-parser';
 
 // 方式 1: OMP 统一入口
 OMP.docx.updateTitle(doc, '新标题');
@@ -710,7 +714,7 @@ updateDocxTitle(doc, '新标题');
 
 ```typescript
 import { toDocxJSON, docx } from 'office-meta-parser/docx';
-import { OMP } from 'office-meta-parser';
+import { OMP } from '@turing-weique/office-meta-parser';
 
 const json = toDocxJSON(doc);              // → DocxDocument 对象
 const str  = docx.toJSONString(doc, 2);    // → JSON 字符串
@@ -780,7 +784,7 @@ clearRevision(run);
 
 ---
 
-### XLSX (`office-meta-parser/xlsx`)
+### XLSX (`@turing-weique/office-meta-parser/xlsx`)
 
 #### 解析 / 序列化
 
@@ -798,7 +802,7 @@ clearRevision(run);
 
 ```typescript
 import { xlsx } from 'office-meta-parser/xlsx';
-import { OMP } from 'office-meta-parser';
+import { OMP } from '@turing-weique/office-meta-parser';
 
 // OMP 方式
 OMP.xlsx.updateTitle(wb, '销售报表');
@@ -812,7 +816,7 @@ xlsx.updateTitle(wb, '销售报表');
 
 ```typescript
 import { xlsx } from 'office-meta-parser/xlsx';
-import { OMP } from 'office-meta-parser';
+import { OMP } from '@turing-weique/office-meta-parser';
 
 xlsx.toJSON(wb);
 xlsx.saveJSON(wb, 'workbook.json');
@@ -844,7 +848,7 @@ removeComment(wb, 0, 'B2');
 
 ---
 
-### PPTX (`office-meta-parser/pptx`)
+### PPTX (`@turing-weique/office-meta-parser/pptx`)
 
 #### 解析 / 序列化
 
@@ -862,7 +866,7 @@ removeComment(wb, 0, 'B2');
 
 ```typescript
 import { pptx } from 'office-meta-parser/pptx';
-import { OMP } from 'office-meta-parser';
+import { OMP } from '@turing-weique/office-meta-parser';
 
 // OMP 方式
 OMP.pptx.updateTitle(pres, '产品介绍');
@@ -876,7 +880,7 @@ pptx.updateTitle(pres, '产品介绍');
 
 ```typescript
 import { pptx } from 'office-meta-parser/pptx';
-import { OMP } from 'office-meta-parser';
+import { OMP } from '@turing-weique/office-meta-parser';
 
 pptx.toJSON(pres);
 pptx.saveJSON(pres, 'presentation.json');
@@ -906,7 +910,7 @@ removeComment(pres, 0, '1');
 
 ---
 
-### 核心模块 (`office-meta-parser/core`)
+### 核心模块 (`@turing-weique/office-meta-parser/core`)
 
 #### 文件 I/O
 
@@ -923,7 +927,7 @@ removeComment(pres, 0, '1');
 #### 格式检测与校验
 
 ```typescript
-import { detectFormat, validate } from 'office-meta-parser';
+import { detectFormat, validate } from '@turing-weique/office-meta-parser';
 
 // 检测格式
 const format = await detectFormat(buffer); // 'docx' | 'xlsx' | 'pptx' | null
@@ -936,14 +940,14 @@ const result = await validate(buffer);
 #### 元数据更新（泛型）
 
 ```typescript
-import { updateTitle, updateCreator, createMetaOps } from 'office-meta-parser';
+import { updateTitle, updateCreator, createMetaOps } from '@turing-weique/office-meta-parser';
 
 // 直接使用泛型函数 — 适用于任意持有 meta 的对象
 updateTitle(doc, '新标题');
 updateCreator(wb, '张三');
 
 // createMetaOps 工厂 — 为自定义类型生成全套操作
-import type { DocumentMeta } from 'office-meta-parser';
+import type { DocumentMeta } from '@turing-weique/office-meta-parser';
 
 interface MyDoc { meta: DocumentMeta; /* ... */ }
 const myOps = createMetaOps<MyDoc>();
@@ -984,7 +988,7 @@ myOps.saveJSON(myDoc, 'output.json');
 ### 错误处理
 
 ```typescript
-import { ValidationError, FormatError } from 'office-meta-parser';
+import { ValidationError, FormatError } from '@turing-weique/office-meta-parser';
 
 try {
   await serializeDocx(doc);
