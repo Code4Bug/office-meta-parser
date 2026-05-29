@@ -4,7 +4,9 @@
   "license": "Apache-2.0",
   "type": "module",
   "sideEffects": false,
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "exports": {
@@ -38,12 +40,13 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "typescript": "^5.4.0",
+    "@types/node": "^25.9.1",
     "tsup": "^8.0.0",
+    "typescript": "^5.4.0",
     "vitest": "^2.0.0"
   },
   "dependencies": {
-    "jszip": "^3.10.0",
-    "fast-xml-parser": "^4.4.0"
+    "fast-xml-parser": "^4.4.0",
+    "jszip": "^3.10.0"
   }
 }
