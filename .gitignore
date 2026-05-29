@@ -52,6 +52,8 @@ htmlcov/
 *.swp
 *~
 
+.claude
+
 tests/files/
 tests/input/
 tests/output/

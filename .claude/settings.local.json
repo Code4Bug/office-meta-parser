@@ -35,7 +35,10 @@
       "Bash(git -C /Users/edward/Documents/workspace/projects/office-meta-parser ls-files '*.DS_Store')",
       "Bash(git *)",
       "Bash(grep -rn 'Id=\"\\\\${' src/ --include=\"*.ts\")",
-      "Bash(grep -rn 'Type=\"\\\\${' src/ --include=\"*.ts\")"
+      "Bash(grep -rn 'Type=\"\\\\${' src/ --include=\"*.ts\")",
+      "Bash(npm run *)",
+      "Bash(npm install *)",
+      "Bash(npm version *)"
     ]
   }
 }
