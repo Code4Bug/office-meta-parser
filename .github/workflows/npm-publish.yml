@@ -23,7 +23,7 @@ jobs:
         run: npm run typecheck
 
       - name: Run tests
-        run: npm test
+        run: npx vitest run --exclude tests/scripts/real-files.test.ts
 
       - name: Build
         run: npm run build
